@@ -84,9 +84,6 @@ class DataPreProcess(object):
 			edges.append({'label':'ip2url', 'src':line[2], 'dst':url, 'time':format_time, 'hash':hashlib.md5(line[2]+url).hexdigest()})
 			
 		vertices['ip'] = list(set(vertices['ip']))
-					
-        	
-        #	edges.append({})
 		
 		#check_exist(vertices, edges)
 		
