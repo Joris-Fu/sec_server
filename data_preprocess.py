@@ -39,12 +39,12 @@ class DataPreProcess(object):
 			hash_val = hashlib.md5(''.join(line[0:9])).hexdigest()
 			edges.append({'label':'access', 'src':line[0], 'dst': line[1], 'src_port': line[5], 'dst_port': line[6], 'time': format_time, 'pkg_num':line[2], 'bytes':line[3], 'protocol':line[8], 'TCP_flag':line[7], 'hash':hash_val})
 		
-		#check_exist(vertices, edges)
+		self.check_exist(vertices, edges)
 		
 		return vertices, edges
 	
 	def jsp_import(self):
-		vertices = {'ip':[],'domain':{},'url':{}}
+		vertices = {'ip':{},'domain':{},'url':{}}
 		edges = []
 		
 		try:
@@ -57,8 +57,8 @@ class DataPreProcess(object):
 		
 		for line in lines:
 			line = line.strip().split('\t')
-			vertices['ip'].append(line[2])
-			vertices['ip'].append(line[3])
+			vertices['ip'][line[2]] = {}
+			vertices['ip'][line[3]] = {}
 			
 			res = line[8]
 			pattern_host = re.compile(r'(Host:)(.*?)(\\)')
@@ -83,30 +83,32 @@ class DataPreProcess(object):
 			edges.append({'label':'url2host', 'src':url, 'dst':host, 'time':format_time, 'hash':hashlib.md5(url+host).hexdigest()})
 			edges.append({'label':'ip2url', 'src':line[2], 'dst':url, 'time':format_time, 'hash':hashlib.md5(line[2]+url).hexdigest()})
 			
-		vertices['ip'] = list(set(vertices['ip']))
-		
-		#check_exist(vertices, edges)
-		
-		return vertices, edges
-		
-'''	
-	def check_exist(self, vertices, edges)
-		client = GremlinClient(server)
-		
-		for type in vertices:
-			for k in vertices[type]:
-				resp = client.run_script('g.V().has("name", val)', val = k) 
-				if resp == #存在:
-					vertices[type].pop(k)
-		
-		for type in edges:
-			for k in edges[type]:
-				resp = client.run_script('g.V().has("name", val)', val = k) 
-				if resp == #存在:
-					edges[type].pop(k)		
+			
+		self.check_exist(vertices, edges)
 		
 		return vertices, edges
-'''
+		
+	def check_exist(self, vertices, edges):
+		client = GremlinClient(self.server)
+		
+		for type in vertices.keys():
+			if type == 'ip':
+				label = "IP_ADD_SCHEME_TRACE"
+			elif type == 'domain':
+				label = "DOMAIN_NAME_SCHEME_TRACE"
+			elif type == 'url':
+				label = "URL_ADD_SCHEME_TRACE"
+			for key in vertices[type].keys():
+				resp = client.run_script('g.V().has(name, val).count()', name = label, val = key) 
+				if str(resp).strip('[]') != '0':
+					vertices[type].pop(key)
+
+#		for edge in edges:
+#			resp = client.run_script('g.E().has("hash" val)', val = edge['hash']) 
+#			if str(resp).strip('[]') != '0':
+#				edges.remove(edge)
+
+		return vertices, edges
 
 def main():
 #	test = DataPreProcess('http://10.1.1.48:8182', 'F:\\FLOW-20160513-dip.txt')
@@ -116,9 +118,10 @@ def main():
 
 	test = DataPreProcess('http://10.1.1.48:8182', 'F:\\fghk-2787-jsp.txt')
 	vertices, edges = test.jsp_import()
-	for i in edges:
+	test.check_exist(vertices, edges)
+	for i in vertices['ip']:
 		print i
-
+	
 	
 if __name__ == '__main__':
 	main()
