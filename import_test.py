@@ -34,7 +34,7 @@ class DataImport(object):
 			print "Inserting: "+line[2]
 			print "Runtime: "+str(tmp-start)
 			print "Number: "+str(count)
-
+			
 def main():
 	url = "http://10.1.1.48:8182"
 	graph = gremlinrestclient.TinkerGraph(url)
