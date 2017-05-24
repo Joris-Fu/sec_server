@@ -2,6 +2,7 @@
 
 import os
 import sys
+
 from setuptools import setup, Extension
 
 if not hasattr(sys, "hexversion") or sys.hexversion < 0x02030000:
@@ -9,7 +10,7 @@ if not hasattr(sys, "hexversion") or sys.hexversion < 0x02030000:
 
 if os.name == "posix":
     from setup_posix import get_config
-else: # assume windows
+else:  # assume windows
     from setup_windows import get_config
 
 metadata, options = get_config()

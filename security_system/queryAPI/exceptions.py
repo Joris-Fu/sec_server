@@ -4,7 +4,6 @@ __all__ = ("RequestError", "GremlinServerError")
 
 
 class StatusException(IOError):
-
     def __init__(self, value, result):
         """Handle all exceptions returned from the Gremlin Server as per:
         """

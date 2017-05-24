@@ -6,12 +6,13 @@ want to make your own subclasses. In most cases, you will probably
 override Connection.default_cursor with a non-standard Cursor class.
 
 """
+import _mysql
+import re
+
 import cursors
 from _mysql_exceptions import Warning, Error, InterfaceError, DataError, \
-     DatabaseError, OperationalError, IntegrityError, InternalError, \
-     NotSupportedError, ProgrammingError
-import types, _mysql
-import re
+    DatabaseError, OperationalError, IntegrityError, InternalError, \
+    NotSupportedError, ProgrammingError
 
 
 def defaulterrorhandler(connection, cursor, errorclass, errorvalue):
@@ -35,7 +36,9 @@ def defaulterrorhandler(connection, cursor, errorclass, errorvalue):
     del connection
     raise errorclass, errorvalue
 
+
 re_numeric_part = re.compile(r"^(\d+)")
+
 
 def numeric_part(s):
     """Returns the leading numeric part of a string.
@@ -46,7 +49,7 @@ def numeric_part(s):
     >>> numeric_part("16b")
     16
     """
-    
+
     m = re_numeric_part.match(s)
     if m:
         return int(m.group(1))
@@ -54,11 +57,10 @@ def numeric_part(s):
 
 
 class Connection(_mysql.connection):
-
     """MySQL Database Connection Object"""
 
     default_cursor = cursors.Cursor
-    
+
     def __init__(self, *args, **kwargs):
         """
 
@@ -145,12 +147,12 @@ class Connection(_mysql.connection):
         """
         from constants import CLIENT, FIELD_TYPE
         from converters import conversions
-        from weakref import proxy, WeakValueDictionary
-        
+        from weakref import proxy
+
         import types
 
         kwargs2 = kwargs.copy()
-        
+
         if kwargs.has_key('conv'):
             conv = kwargs['conv']
         else:
@@ -171,42 +173,46 @@ class Connection(_mysql.connection):
             use_unicode = True
         else:
             use_unicode = False
-            
+
         use_unicode = kwargs2.pop('use_unicode', use_unicode)
         sql_mode = kwargs2.pop('sql_mode', '')
 
         client_flag = kwargs.get('client_flag', 0)
-        client_version = tuple([ numeric_part(n) for n in _mysql.get_client_info().split('.')[:2] ])
+        client_version = tuple([numeric_part(n) for n in _mysql.get_client_info().split('.')[:2]])
         if client_version >= (4, 1):
             client_flag |= CLIENT.MULTI_STATEMENTS
         if client_version >= (5, 0):
             client_flag |= CLIENT.MULTI_RESULTS
-            
+
         kwargs2['client_flag'] = client_flag
 
         super(Connection, self).__init__(*args, **kwargs2)
 
-        self.encoders = dict([ (k, v) for k, v in conv.items()
-                               if type(k) is not int ])
-        
-        self._server_version = tuple([ numeric_part(n) for n in self.get_server_info().split('.')[:2] ])
+        self.encoders = dict([(k, v) for k, v in conv.items()
+                              if type(k) is not int])
+
+        self._server_version = tuple([numeric_part(n) for n in self.get_server_info().split('.')[:2]])
 
         db = proxy(self)
+
         def _get_string_literal():
             def string_literal(obj, dummy=None):
                 return db.string_literal(obj)
+
             return string_literal
 
         def _get_unicode_literal():
             def unicode_literal(u, dummy=None):
                 return db.literal(u.encode(unicode_literal.charset))
+
             return unicode_literal
 
         def _get_string_decoder():
             def string_decoder(s):
                 return s.decode(string_decoder.charset)
+
             return string_decoder
-        
+
         string_literal = _get_string_literal()
         self.unicode_literal = unicode_literal = _get_unicode_literal()
         self.string_decoder = string_decoder = _get_string_decoder()
@@ -230,7 +236,7 @@ class Connection(_mysql.connection):
             # PEP-249 requires autocommit to be initially off
             self.autocommit(False)
         self.messages = []
-        
+
     def cursor(self, cursorclass=None):
         """
 
@@ -242,14 +248,15 @@ class Connection(_mysql.connection):
         """
         return (cursorclass or self.cursorclass)(self)
 
-    def __enter__(self): return self.cursor()
-    
+    def __enter__(self):
+        return self.cursor()
+
     def __exit__(self, exc, value, tb):
         if exc:
             self.rollback()
         else:
             self.commit()
-            
+
     def literal(self, o):
         """
 
@@ -271,7 +278,7 @@ class Connection(_mysql.connection):
         warn("begin() is non-standard and will be removed in 1.3",
              DeprecationWarning, 2)
         self.query("BEGIN")
-        
+
     if not hasattr(_mysql.connection, 'warning_count'):
 
         def warning_count(self):
@@ -307,18 +314,18 @@ class Connection(_mysql.connection):
             raise NotSupportedError("server is too old to set sql_mode")
         self.query("SET SESSION sql_mode='%s'" % sql_mode)
         self.store_result()
-        
+
     def show_warnings(self):
         """Return detailed information about warnings as a
         sequence of tuples of (Level, Code, Message). This
         is only supported in MySQL-4.1 and up. If your server
         is an earlier version, an empty sequence is returned."""
-        if self._server_version < (4,1): return ()
+        if self._server_version < (4, 1): return ()
         self.query("SHOW WARNINGS")
         r = self.store_result()
         warnings = r.fetch_row(0)
         return warnings
-    
+
     Warning = Warning
     Error = Error
     InterfaceError = InterfaceError

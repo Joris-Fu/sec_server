@@ -32,28 +32,34 @@ MySQL.connect().
 
 """
 
-from _mysql import string_literal, escape_sequence, escape_dict, escape, NULL
+import array
+import types
+from _mysql import string_literal, escape_sequence, escape_dict, NULL
+
 from constants import FIELD_TYPE, FLAG
 from times import *
-import types
-import array
 
 try:
     set
 except NameError:
     from sets import Set as set
 
+
 def Bool2Str(s, d): return str(int(s))
 
+
 def Str2Set(s):
-    return set([ i for i in s.split(',') if i ])
+    return set([i for i in s.split(',') if i])
+
 
 def Set2Str(s, d):
     return string_literal(','.join(s), d)
-    
+
+
 def Thing2Str(s, d):
     """Convert something into a string via str()."""
     return str(s)
+
 
 def Unicode2Str(s, d):
     """Convert a unicode object to a string using the default encoding.
@@ -61,17 +67,20 @@ def Unicode2Str(s, d):
     is connection-dependent."""
     return s.encode()
 
+
 Long2Int = Thing2Str
+
 
 def Float2Str(o, d):
     return '%.15g' % o
 
+
 def None2NULL(o, d):
     """Convert None to NULL."""
-    return NULL # duh
+    return NULL  # duh
+
 
 def Thing2Literal(o, d):
-    
     """Convert something into a SQL string literal.  If using
     MySQL-3.23 or newer, string_literal() is a method of the
     _mysql.MYSQL object, and this function will be overridden with
@@ -81,7 +90,6 @@ def Thing2Literal(o, d):
 
 
 def Instance2Str(o, d):
-
     """
 
     Convert an Instance to a string representation.  If the __str__()
@@ -94,25 +102,28 @@ def Instance2Str(o, d):
 
     if d.has_key(o.__class__):
         return d[o.__class__](o, d)
-    cl = filter(lambda x,o=o:
+    cl = filter(lambda x, o=o:
                 type(x) is types.ClassType
                 and isinstance(o, x), d.keys())
     if not cl and hasattr(types, 'ObjectType'):
-        cl = filter(lambda x,o=o:
+        cl = filter(lambda x, o=o:
                     type(x) is types.TypeType
                     and isinstance(o, x)
                     and d[x] is not Instance2Str,
                     d.keys())
     if not cl:
-        return d[types.StringType](o,d)
+        return d[types.StringType](o, d)
     d[o.__class__] = d[cl[0]]
     return d[cl[0]](o, d)
+
 
 def char_array(s):
     return array.array('c', s)
 
+
 def array2Str(o, d):
     return Thing2Literal(o.tostring(), d)
+
 
 conversions = {
     types.IntType: Thing2Str,
@@ -124,7 +135,7 @@ conversions = {
     types.DictType: escape_dict,
     types.InstanceType: Instance2Str,
     array.ArrayType: array2Str,
-    types.StringType: Thing2Literal, # default
+    types.StringType: Thing2Literal,  # default
     types.UnicodeType: Unicode2Str,
     types.ObjectType: Instance2Str,
     types.BooleanType: Bool2Str,
@@ -148,24 +159,22 @@ conversions = {
     FIELD_TYPE.DATE: Date_or_None,
     FIELD_TYPE.BLOB: [
         (FLAG.BINARY, str),
-        ],
+    ],
     FIELD_TYPE.STRING: [
         (FLAG.BINARY, str),
-        ],
+    ],
     FIELD_TYPE.VAR_STRING: [
         (FLAG.BINARY, str),
-        ],
+    ],
     FIELD_TYPE.VARCHAR: [
         (FLAG.BINARY, str),
-        ],
-    }
+    ],
+}
 
 try:
     from decimal import Decimal
+
     conversions[FIELD_TYPE.DECIMAL] = Decimal
     conversions[FIELD_TYPE.NEWDECIMAL] = Decimal
 except ImportError:
     pass
-
-
-

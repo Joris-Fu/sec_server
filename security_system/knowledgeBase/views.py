@@ -1,10 +1,12 @@
-from django.shortcuts import render
-from models import *
-from django.http import HttpResponse
 import json
 import sys
+
+from django.http import HttpResponse
+from models import *
+
 reload(sys)
 sys.setdefaultencoding("utf-8")
+
 
 def groupCount(request, type):
     list = []
@@ -40,9 +42,11 @@ def groupCount(request, type):
 
     return HttpResponse(json.dumps(dic))
 
+
 def getInstance(request):
     result = list(instance.objects.values('ip', 'city', 'country', 'ins_type', 'timestamp', 'lat', 'lon', 'port'))
     return HttpResponse(json.dumps(result))
+
 
 def getVulnerability(request):
     vulDeviceDic = {}
@@ -62,5 +66,3 @@ def getVulnerability(request):
             vul['devices'] = []
 
     return HttpResponse(json.dumps(result))
-
-

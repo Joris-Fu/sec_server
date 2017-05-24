@@ -1,30 +1,41 @@
-import requests,json,urllib2
+import json
+import requests
+
+
 def RqIP(ip):
-    txt =requests.get("https://www.threatcrowd.org/searchApi/v2/ip/report/", {"ip": ip})
-    result=json.loads(txt.text)
+    txt = requests.get("https://www.threatcrowd.org/searchApi/v2/ip/report/", {"ip": ip})
+    result = json.loads(txt.text)
     return result
+
+
 def RqDomain(domain):
     txt = requests.get("http://www.threatcrowd.org/searchApi/v2/domain/report/", {"domain": domain})
     result = json.loads(txt.text)
     return result
+
+
 def RqEmail(email):
-    txt = requests.get("https://www.threatcrowd.org/searchApi/v2/email/report/",{"email":email})
+    txt = requests.get("https://www.threatcrowd.org/searchApi/v2/email/report/", {"email": email})
     result = json.loads(txt.text)
     return result
+
+
 def RqMD5(hash):
     txt = requests.get("https://www.threatcrowd.org/searchApi/v2/email/report/", {"resource": hash})
     result = json.loads(txt.text)
     return result
-def add(source,type,nodes,edges,rootid,id):
+
+
+def add(source, type, nodes, edges, rootid, id):
     if source == "-":
         return id
     node = {}
     edge = {}
     redge = {}
-    nodeid=id
+    nodeid = id
     for node1 in nodes:
         if node1["name"] == source:
-            nodeid=node1["id"]
+            nodeid = node1["id"]
     if nodeid == id:
         node["id"] = nodeid
         node["name"] = source
@@ -33,13 +44,14 @@ def add(source,type,nodes,edges,rootid,id):
     edge["srcID"] = rootid
     edge["dstID"] = nodeid
     for edge1 in edges:
-        if((edge1["srcID"]==nodeid)&(edge1["dstID"]==rootid)):
-            return id+1
+        if ((edge1["srcID"] == nodeid) & (edge1["dstID"] == rootid)):
+            return id + 1
     edges.append(edge)
     id += 1
     return id
 
-def Threat(type,obj):
+
+def Threat(type, obj):
     result = {}
     nodes = []
     edges = []
@@ -50,10 +62,10 @@ def Threat(type,obj):
     emails = {}
     resolutions = {}
     node1 = {}
-    #obj = "188.40.75.132"
+    # obj = "188.40.75.132"
     if type == '1':
         result = RqIP(obj)
-        node1["type"]="ip"
+        node1["type"] = "ip"
     elif type == '2':
         result = RqDomain(obj)
         node1["type"] = "domain"
@@ -75,15 +87,15 @@ def Threat(type,obj):
     if "emails" in result:
         emails = result["emails"]
     for hsh in hashes:
-        id = add(hsh,"hash", nodes, edges, 1, id)
+        id = add(hsh, "hash", nodes, edges, 1, id)
     for em in emails:
-        id = add(em,"email", nodes, edges, 1, id)
+        id = add(em, "email", nodes, edges, 1, id)
     print(id)
     for resolution in resolutions:
         if "ip_address" in resolution:
             result = RqIP(resolution["ip_address"])
             rootid = id
-            id = add(resolution["ip_address"],"ip", nodes, edges, 1, id)
+            id = add(resolution["ip_address"], "ip", nodes, edges, 1, id)
             if "resolutions" in result:
                 resolutions = result["resolutions"]
             if "hashes" in result:
@@ -91,31 +103,9 @@ def Threat(type,obj):
             if "emails" in result:
                 emails = result["emails"]
             for hsh in hashes:
-                id = add(hsh,"hash", nodes, edges, rootid, id)
+                id = add(hsh, "hash", nodes, edges, rootid, id)
             for em in emails:
-                id = add(em,"email", nodes, edges, rootid, id)
-            for resolution in resolutions:
-                if "ip_address" in resolution:
-                    name = resolution["ip_address"]
-                    type="ip"
-                else:
-                    name = resolution["domain"]
-                    type="domain"
-                id = add(name,type, nodes, edges, rootid, id)
-        else:
-            result = RqDomain(resolution["domain"])
-            rootid = id
-            id = add(resolution["domain"],"domain", nodes, edges, 1, id)
-            if "resolutions" in result:
-                resolutions = result["resolutions"]
-            if "hashes" in result:
-                hashes = result["hashes"]
-            if "emails" in result:
-                emails = result["emails"]
-            for hsh in hashes:
-                id = add(hsh,"hash", nodes, edges, rootid, id)
-            for em in emails:
-                id = add(em,"email", nodes, edges, rootid, id)
+                id = add(em, "email", nodes, edges, rootid, id)
             for resolution in resolutions:
                 if "ip_address" in resolution:
                     name = resolution["ip_address"]
@@ -123,7 +113,29 @@ def Threat(type,obj):
                 else:
                     name = resolution["domain"]
                     type = "domain"
-                id = add(name,type, nodes, edges, rootid, id)
+                id = add(name, type, nodes, edges, rootid, id)
+        else:
+            result = RqDomain(resolution["domain"])
+            rootid = id
+            id = add(resolution["domain"], "domain", nodes, edges, 1, id)
+            if "resolutions" in result:
+                resolutions = result["resolutions"]
+            if "hashes" in result:
+                hashes = result["hashes"]
+            if "emails" in result:
+                emails = result["emails"]
+            for hsh in hashes:
+                id = add(hsh, "hash", nodes, edges, rootid, id)
+            for em in emails:
+                id = add(em, "email", nodes, edges, rootid, id)
+            for resolution in resolutions:
+                if "ip_address" in resolution:
+                    name = resolution["ip_address"]
+                    type = "ip"
+                else:
+                    name = resolution["domain"]
+                    type = "domain"
+                id = add(name, type, nodes, edges, rootid, id)
     results["isgood"] = isgood
     results["nodes"] = nodes
     results["edges"] = edges

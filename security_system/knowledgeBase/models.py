@@ -2,15 +2,18 @@ from __future__ import unicode_literals
 
 from django.db import models
 
+
 class vendor(models.Model):
     name = models.CharField(max_length=256, primary_key=True)
     country = models.CharField(max_length=256, null=True)
     url = models.CharField(max_length=256, null=True)
 
+
 class device(models.Model):
     name = models.CharField(max_length=256, primary_key=True)
     vendor = models.CharField(max_length=256, null=True)
     deviceType = models.CharField(max_length=256, null=True)
+
 
 class instance(models.Model):
     name = models.CharField(max_length=256, primary_key=True)
@@ -34,6 +37,7 @@ class instance(models.Model):
     timestamp = models.CharField(max_length=256, null=True)
     type_index = models.CharField(max_length=256, null=True)
 
+
 class vulnerability(models.Model):
     name = models.CharField(max_length=256, primary_key=True)
     vendor = models.CharField(max_length=256, null=True)
@@ -43,6 +47,7 @@ class vulnerability(models.Model):
     mitigation = models.CharField(max_length=256, null=True)
     provider = models.CharField(max_length=256, null=True)
     date = models.CharField(max_length=256, null=True)
+
 
 class dev2vul(models.Model):
     name = models.CharField(max_length=256, primary_key=True)

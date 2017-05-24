@@ -2,9 +2,7 @@ import collections
 import json
 
 import requests
-
 from gremlinrestclient.exceptions import RequestError, GremlinServerError
-
 
 __all__ = ("GremlinRestClient", "Response")
 
@@ -14,12 +12,10 @@ Response = collections.namedtuple(
 
 
 class GremlinRestClient(object):
-
     HEADERS = {'content-type': 'application/json'}
 
     def __init__(self, url):
         self._url = url
-
 
     def execute(self, gremlin, bindings=None, lang="gremlin-groovy"):
         """
@@ -38,8 +34,8 @@ class GremlinRestClient(object):
             "bindings": bindings,
             "language": lang
         }
-        #print payload
-        
+        # print payload
+
         resp = self._post(self._url, json.dumps(payload))
         resp = resp.json()
         resp = Response(resp["status"]["code"],

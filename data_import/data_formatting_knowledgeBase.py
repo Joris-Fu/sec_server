@@ -1,34 +1,32 @@
 #!/usr/bin/env python
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 
-import time
 import codecs
-import re
-import hashlib
-import sys
-import socket
-import struct
 import json
+import sys
 
 reload(sys)
-sys.setdefaultencoding( "utf-8" )
+sys.setdefaultencoding("utf-8")
 
-def _remove_duplicate(dict_list):  
+
+def _remove_duplicate(dict_list):
     val_list = []
     unique_dict_list = []
-    for i in range(len(dict_list)): 
-        if dict_list[i]['name']  not in val_list:
+    for i in range(len(dict_list)):
+        if dict_list[i]['name'] not in val_list:
             val_list.append(dict_list[i]['name'])
             unique_dict_list.append(dict_list[i])
     return unique_dict_list
 
+
 def index(srcV, dstV):
     return srcV + "-****-" + dstV
+
 
 class knowledgeBase_FormattingProcess(object):
     def __init__(self, file_path):
         self.file_path = file_path
-    
+
     def vendor_preprocess(self):
         vertices = []
 
@@ -36,12 +34,13 @@ class knowledgeBase_FormattingProcess(object):
         try:
             lines = file.readlines()
         except StandardError, e:
-            print e
+            print
+            e
         finally:
             file.close()
-        
+
         lines = list(set(lines))
-        
+
         for line in lines:
             line = line.strip().split('\t')
             name = line[0]
@@ -51,31 +50,32 @@ class knowledgeBase_FormattingProcess(object):
                 country = line[1]
             if len(line) > 2:
                 url = line[2]
-        
-            #Add vertices
+
+            # Add vertices
             vertices.append({'name': name, 'type': 'vendor', 'country': country, 'url': url})
-        
+
         vertices = _remove_duplicate(vertices)
         return vertices
 
     def protocol_preprocess(self):
         vertices = []
-        
+
         file = codecs.open(self.file_path[0], 'r')
         try:
             lines = file.readlines()
         except StandardError, e:
-            print e
+            print
+            e
         finally:
             file.close()
-        
+
         lines = list(set(lines))
-        
+
         for line in lines:
             line = line.strip().split()
             name = line[0]
-            
-            #Add vertices
+
+            # Add vertices
             vertices.append({'name': name, 'type': 'protocol'})
 
         vertices = _remove_duplicate(vertices)
@@ -84,34 +84,36 @@ class knowledgeBase_FormattingProcess(object):
 
     def zoomeye_instance_preprocess(self):
         vertices = []
-        
+
         file = codecs.open(self.file_path[0], 'r')
-        fileB = codecs.open(self.file_path[1], 'r')#vendor in fileB
+        fileB = codecs.open(self.file_path[1], 'r')  # vendor in fileB
         try:
             ins = json.load(file)
         except StandardError, e:
-            print e
+            print
+            e
         finally:
             file.close()
         try:
             linesB = fileB.readlines()
         except StandardError, e:
-            print e
+            print
+            e
         finally:
             fileB.close()
-            
-        #get vendor Name
+
+        # get vendor Name
         venName = []
         linesB = list(set(linesB))
         for line in linesB:
             line = line.strip().split(',')
             venName.append(line[0])
-            
-        #Add vertices
+
+        # Add vertices
         protocol = ins[0]['protocol']
         vertices.append({'name': protocol, 'type': 'protocol'})
         ins.pop(0)
-        
+
         for match in ins:
             city = match['geoinfo']['city']['names']['en']
             if city == None:
@@ -136,43 +138,48 @@ class knowledgeBase_FormattingProcess(object):
             port = match['portinfo']['port']
             banner = match['portinfo']['banner']
             timestamp = match['timestamp']
-            
-            #Add vertices
-            ##modified##
-            vertices.append({'name': ip, 'type': 'instance', 'type_index': 'instance', 'ins_type': protocol, 'ip': ip, 'city': city, 'country': country, 'continent': continent, 'asn': asn, 'lat': lat, 'lon': lon, 'hostname': hostname, 'service': service, 'os': os, 'app': app, 'extrainfo': extrainfo, 'version': version, 'port': port, 'banner': banner, 'timestamp': timestamp})
-            vertices.append({'name': protocol, 'type': 'protocol'})
-            
 
-        #Remove duplicated vertices
+            # Add vertices
+            ##modified##
+            vertices.append(
+                {'name': ip, 'type': 'instance', 'type_index': 'instance', 'ins_type': protocol, 'ip': ip, 'city': city,
+                 'country': country, 'continent': continent, 'asn': asn, 'lat': lat, 'lon': lon, 'hostname': hostname,
+                 'service': service, 'os': os, 'app': app, 'extrainfo': extrainfo, 'version': version, 'port': port,
+                 'banner': banner, 'timestamp': timestamp})
+            vertices.append({'name': protocol, 'type': 'protocol'})
+
+        # Remove duplicated vertices
         vertices = _remove_duplicate(vertices)
         return vertices
-    
+
     def diting_instance_preprocess(self):
         vertices = []
-        
+
         file = codecs.open(self.file_path[0], 'r')
-        fileB = codecs.open(self.file_path[1], 'r')#vendor in fileB
+        fileB = codecs.open(self.file_path[1], 'r')  # vendor in fileB
         try:
             ins = json.load(file)
         except StandardError, e:
-            print e
+            print
+            e
         finally:
             file.close()
         try:
             linesB = fileB.readlines()
         except StandardError, e:
-            print e
+            print
+            e
         finally:
             fileB.close()
-            
-        #get vendor Name
+
+        # get vendor Name
         venName = []
         linesB = list(set(linesB))
         for line in linesB:
             line = line.strip().split(',')
             venName.append(line[0])
-            
-        num = 0 # distinguish ip
+
+        num = 0  # distinguish ip
         for match in ins:
             timestamp = match['timestamp']
             port = match['port']
@@ -198,25 +205,29 @@ class knowledgeBase_FormattingProcess(object):
             lat = match['lat']
             lon = match['lon']
             port = match['port']
-            
-            #Add vertices
+
+            # Add vertices
             vertices.append({'name': protocol, 'type': 'protocol'})
             ##modified##
-            vertices.append({'name': ip, 'type': 'instance','type_index': 'instance' , 'ins_type': protocol, 'ip': rawIP, 'city': city, 'country': country,'banner': banner, 'timestamp': timestamp, 'port': port, 'lat': lat, 'lon': lon})
+            vertices.append(
+                {'name': ip, 'type': 'instance', 'type_index': 'instance', 'ins_type': protocol, 'ip': rawIP,
+                 'city': city, 'country': country, 'banner': banner, 'timestamp': timestamp, 'port': port, 'lat': lat,
+                 'lon': lon})
 
-        #Remove duplicated vertices
+        # Remove duplicated vertices
         vertices = _remove_duplicate(vertices)
         return vertices
-    
+
     ##modified_add##
     def camera_instance_preprocess(self):
         vertices = []
-        
+
         file = codecs.open(self.file_path[0], 'r')
         try:
             ins = json.load(file)
         except StandardError, e:
-            print e
+            print
+            e
         finally:
             file.close()
         for match in ins:
@@ -229,39 +240,41 @@ class knowledgeBase_FormattingProcess(object):
             city = match['city']
             port = match['port']
             asn = match['asn']
-        
-        #Add vertices
-            vertices.append({'name': ip, 'type': 'instance', 'type_index': 'instance', 'ins_type': 'Camera', 'lat': lat, 'lon': lon, 'ip': ip, 'country': country, 'city': city, 'banner': banner, 'timestamp': timestamp, 'port': port, 'asn': asn })
-        
+
+            # Add vertices
+            vertices.append(
+                {'name': ip, 'type': 'instance', 'type_index': 'instance', 'ins_type': 'Camera', 'lat': lat, 'lon': lon,
+                 'ip': ip, 'country': country, 'city': city, 'banner': banner, 'timestamp': timestamp, 'port': port,
+                 'asn': asn})
+
         vertices = _remove_duplicate(vertices)
         return vertices
-        
-        
-        
+
     def vulnerability_preprocess(self):
         vertices = []
-        
+
         file = codecs.open(self.file_path[0], 'r', encoding='utf-8')
-        fileB = codecs.open(self.file_path[1], 'r', encoding='utf-8')#vendor in fileB
+        fileB = codecs.open(self.file_path[1], 'r', encoding='utf-8')  # vendor in fileB
         try:
             lines = file.readlines()
             linesB = fileB.readlines()
         except StandardError, e:
-            print e
+            print
+            e
         finally:
             file.close()
             fileB.close()
-         
-        #get vendor Name
+
+        # get vendor Name
         venName = []
         linesB = list(set(linesB))
         for line in linesB:
             line = line.strip().split(',')
             venName.append(line[0])
-            
-        #Remove duplicated lines
+
+        # Remove duplicated lines
         lines = list(set(lines))
-        
+
         for line in lines:
             line = line.strip().split('\t')
             if len(line) == 1:
@@ -274,74 +287,78 @@ class knowledgeBase_FormattingProcess(object):
             mitigation = line[5]
             provider = line[6]
             timestamp = line[7]
-            
-            #Add vertices
-            vertices.append({'name': name, 'type': 'vulnerability', 'level': level, 'description': description, 'url': url, 'mitigation': mitigation, 'provider': provider, 'timestamp': timestamp})
+
+            # Add vertices
+            vertices.append(
+                {'name': name, 'type': 'vulnerability', 'level': level, 'description': description, 'url': url,
+                 'mitigation': mitigation, 'provider': provider, 'timestamp': timestamp})
             for device in devices:
                 device = device.strip()
                 if device == '(暂无)':
                     continue
                 vertices.append({'name': device, 'type': 'device'})
-            
-        #Remove duplicated vertices
+
+        # Remove duplicated vertices
         vertices = _remove_duplicate(vertices)
         return vertices
-        
+
     def deviceType_preprocess(self):
         vertices = []
-        
+
         file = codecs.open(self.file_path[0], 'r')
         try:
             lines = file.readlines()
         except StandardError, e:
-            print e
+            print
+            e
         finally:
             file.close()
-        
+
         lines = list(set(lines))
-        
+
         for line in lines:
             line = line.strip().split('\t')
             device = line[0]
             name = line[2]
             if name == "未归类":
                 name = "others"
-            #Add vertices
+            # Add vertices
             vertices.append({'name': name, 'type': 'deviceType'})
             vertices.append({'name': device, 'type': 'device'})
-        
-        #Remove duplicated vertices
+
+        # Remove duplicated vertices
         vertices = _remove_duplicate(vertices)
         return vertices
-    
+
     def deviceVendor_preprocess(self):
         vertices = []
-        
+
         file = codecs.open(self.file_path[0], 'r')
         try:
             lines = file.readlines()
         except StandardError, e:
-            print e
+            print
+            e
         finally:
             file.close()
-        
+
         lines = list(set(lines))
-        
+
         for line in lines:
             line = line.strip().split('\t')
             if len(line) > 2:
                 device = line[0]
                 vendor = line[2]
             if device == '(暂无)':
-                continue#####mark
-            #Add vertices
+                continue  #####mark
+            # Add vertices
             vertices.append({'name': device, 'type': 'device'})
             vertices.append({'name': vendor, 'type': 'vendor'})
 
-        #Remove duplicated vertices
+        # Remove duplicated vertices
         vertices = _remove_duplicate(vertices)
         return vertices
-    
+
     ##########
     @classmethod
     def judgeVen(self, vpArr, str):
@@ -350,12 +367,16 @@ class knowledgeBase_FormattingProcess(object):
                 return vp
         return None
 
+
 def main():
-    test = knowledgeBase_DataPreProcess(["data/knowledgeBase/diting/outIEC 60870-5-104.json", "data/knowledgeBase/vendor.txt"])
+    test = knowledgeBase_DataPreProcess(
+        ["data/knowledgeBase/diting/outIEC 60870-5-104.json", "data/knowledgeBase/vendor.txt"])
     vertices = test.diting_instance_preprocess()
-    #test = knowledgeBase_DataPreProcess(["data/knowledgeBase/Camera.json"])
-    #v,e = test.camera_instance_preprocess()
-    print vertices
+    # test = knowledgeBase_DataPreProcess(["data/knowledgeBase/Camera.json"])
+    # v,e = test.camera_instance_preprocess()
+    print
+    vertices
+
 
 if __name__ == '__main__':
     main()

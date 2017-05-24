@@ -1,6 +1,6 @@
+import _mysql
 import unittest
 
-import _mysql
 import MySQLdb
 from MySQLdb.constants import FIELD_TYPE
 
@@ -62,10 +62,10 @@ class CoreAPI(unittest.TestCase):
                           "Should return 0 before we do anything.")
 
 
-    #def test_debug(self):
+        # def test_debug(self):
         ## FIXME Only actually tests if you lack SUPER
-        #self.assertRaises(MySQLdb.OperationalError,
-                          #self.conn.dump_debug_info)
+        # self.assertRaises(MySQLdb.OperationalError,
+        # self.conn.dump_debug_info)
 
     def test_charset_name(self):
         self.assertTrue(isinstance(self.conn.character_set_name(), str),
@@ -82,4 +82,3 @@ class CoreAPI(unittest.TestCase):
     def test_server_info(self):
         self.assertTrue(isinstance(self.conn.get_server_info(), str),
                         "Should return an str.")
-

@@ -1,6 +1,8 @@
 from django.conf.urls import url
-from queryAPI import views
+
 from knowledgeBase import views as knowledgeBase
+from queryAPI import views
+
 urlpatterns = [
     url(r'^api/get/node/(id)/(\d+)/$', views.getNode),
     url(r'^api/get/node/(name)/(.+)/$', views.getNode),
@@ -8,7 +10,7 @@ urlpatterns = [
     url(r'^api/get/neighborhoods/(id)/(\d+)/$', views.getNeigh),
     url(r'^api/get/neighborhoods/$', views.getNeighborhoods),
     url(r'^api/get/neighborhoodsType/id/(\d+)/$', views.getNeighborType),
-    
+
     url(r'^api/get/edge/(.+)/(.+)/$', views.getEdge),
 
     url(r'^api/get/commonAdjacent/$', views.commonAdjacent),
@@ -18,12 +20,12 @@ urlpatterns = [
 
     url(r'^api/post/dropNode/id/(\d+)/$', views.dropNode),
     url(r'^api/post/dropEdge/id/(.+)/$', views.dropEdge),
-    
+
     url(r'^api/get/groupCount/(.+)/$', knowledgeBase.groupCount),
     url(r'^api/get/instance/$', knowledgeBase.getInstance),
     url(r'^api/get/vulnerability/$', knowledgeBase.getVulnerability),
     url(r'^api/post/switchGraph/(.+)/$', views.switchGraph),
-    
+
     url(r'^api/get/Sex/$', views.getSex),
     url(r'^api/get/Place/$', views.getPlace),
     url(r'^api/get/Line/$', views.getLine),
@@ -59,27 +61,27 @@ urlpatterns = [
     url(r'^api/get/CNContent/(.*)/(.*)/$', views.getCNContent),
     url(r'^api/get/ENContent/(.*)/(.*)/$', views.getENContent),
     url(r'^api/get/WeiboInfo/$', views.getweiboInfo),
-################################### update on 2016.12.14 #################################
+    ################################### update on 2016.12.14 #################################
     url(r'^api/get/ENBlog/(.*)/(.*)/$', views.getENBlog),
     url(r'^api/get/CNBlog/(.*)/(.*)/$', views.getCNBlog),
-    
-################################### update on 2017.01.10 #################################
+
+    ################################### update on 2017.01.10 #################################
     url(r'^api/get/Malware/(.*)/(.*)/$', views.getMalware),
-    url(r'^api/get/AttackNum/$', views.getAttackNum),  
-    url(r'^api/get/Conpots/$', views.getConpots),  
-    url(r'^api/get/Conpots_info/(.*)/(.*)/$', views.get_Conpots2),  
-    url(r'^api/get/AttackerCountry/$', views.getAttackerCountry), 
+    url(r'^api/get/AttackNum/$', views.getAttackNum),
+    url(r'^api/get/Conpots/$', views.getConpots),
+    url(r'^api/get/Conpots_info/(.*)/(.*)/$', views.get_Conpots2),
+    url(r'^api/get/AttackerCountry/$', views.getAttackerCountry),
     url(r'^api/get/TargetCountry/$', views.getTargetCountry),
     url(r'^api/get/TimeSequence/$', views.getTimeSequence),
     url(r'^api/get/ThreatCrowd/(.*)/(.*)/$', views.getThreatCrowd),
     url(r'^api/get/IPInfo/(.*)/$', views.getIPInfo),
-################################### update on 2017.01.13 by Xiaosong #################################
-    url(r'^api/get/DDos/$',views.eventsDDos),
-	  url(r'^api/get/German/$',views.eventsGerman),
-	  url(r'^api/get/Ukraine/$',views.eventsUkr),
-	  url(r'^api/get/Stuxnet/$',views.eventsStuxnet),
-###################################update on 2017.01.15#####################################
+    ################################### update on 2017.01.13 by Xiaosong #################################
+    url(r'^api/get/DDos/$', views.eventsDDos),
+    url(r'^api/get/German/$', views.eventsGerman),
+    url(r'^api/get/Ukraine/$', views.eventsUkr),
+    url(r'^api/get/Stuxnet/$', views.eventsStuxnet),
+    ###################################update on 2017.01.15#####################################
     url(r'^api/get/WeiboHeat/(.*)/$', views.getWeiboHeat)
-    #url(r'^api/get/IpStatistic/$', views.getIpStatistic)
+    # url(r'^api/get/IpStatistic/$', views.getIpStatistic)
 
 ]

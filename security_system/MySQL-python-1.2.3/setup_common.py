@@ -1,5 +1,6 @@
 from ConfigParser import SafeConfigParser
 
+
 def get_metadata_and_options():
     config = SafeConfigParser()
     config.read(['metadata.cfg', 'site.cfg'])
@@ -12,18 +13,20 @@ def get_metadata_and_options():
 
     return metadata, options
 
+
 def enabled(options, option):
     value = options[option]
     s = value.lower()
-    if s in ('yes','true','1','y'):
+    if s in ('yes', 'true', '1', 'y'):
         return True
     elif s in ('no', 'false', '0', 'n'):
         return False
     else:
         raise ValueError("Unknown value %s for option %s" % (value, option))
 
+
 def create_release_file(metadata):
-    rel = open("MySQLdb/release.py",'w')
+    rel = open("MySQLdb/release.py", 'w')
     rel.write("""
 __author__ = "%(author)s <%(author_email)s>"
 version_info = %(version_info)s

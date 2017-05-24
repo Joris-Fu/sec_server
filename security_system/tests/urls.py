@@ -1,7 +1,8 @@
-from django.conf.urls import url, include
-from django.contrib import admin
 import views
-#from tests import views 
+from django.conf.urls import url
+from django.contrib import admin
+
+# from tests import views 
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -11,8 +12,8 @@ urlpatterns = [
     url(r'^login/', views.login2),
     url(r'^register/', views.register2),
     url(r'^changepwd/', views.changePwd),
-    
-#----------------------------------------------------
+
+    # ----------------------------------------------------
     url(r'^omg/', views.omg),
     url(r'^addUser1/', views.addUser1),
     url(r'^addUser/', views.addUser),

@@ -1,10 +1,10 @@
-from queryAPI.models import QueryAPI
-from django.http import HttpResponse
-from client import GremlinRestClient
 import json
-import time
-from django.views.decorators.csrf import csrf_exempt 
 import sys
+
+from client import GremlinRestClient
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
 reload(sys)
 sys.setdefaultencoding("utf-8")
 import threading
@@ -15,21 +15,26 @@ graphs = JSON["graphs"]
 proConvert = JSON["proConvert"]
 
 userAgentDic = {}
+
+
 def getGraph(userAgent):
     if userAgent in userAgentDic:
         return userAgentDic[userAgent]
     else:
         return "knowledgeBase"
 
+
 def switchGraph(request, graph):
     if graph in graphs:
         userAgentDic[request.META['HTTP_USER_AGENT']] = graph
-        return HttpResponse(json.dumps({"message" : "finished"}))
+        return HttpResponse(json.dumps({"message": "finished"}))
     else:
-        return HttpResponse(json.dumps({"message" : "graph %s does not exist" % graph}))
+        return HttpResponse(json.dumps({"message": "graph %s does not exist" % graph}))
+
 
 def index(srcV, dstV):
     return srcV + "-****-" + dstV
+
 
 # isV(Bool): v-True, e-False
 # increase(Bool): show label --> database label: True
@@ -39,13 +44,14 @@ def labelConvert(isV, increase, label):
         str += "v_"
     else:
         str += "e_"
-    
-    if increase == True: #show --> database
+
+    if increase == True:  # show --> database
         return str + label
     else:
         return label.replace(str, "")
 
-#convert a single vertex information from database format to front end format
+
+# convert a single vertex information from database format to front end format
 def convertNode(graph, dic):
     result = {}
     for key, value in dic.items():
@@ -60,14 +66,16 @@ def convertNode(graph, dic):
             result[key] = value[0]['value']
     return result
 
-#convert a series of vertices information from databse format to front end format
+
+# convert a series of vertices information from databse format to front end format
 def convertNodes(graph, response, nodes):
     for item in response:
         if (item['type'] == 'vertex' and item['label'] != 'vertex'):
             nodes.append(convertNode(graph, item))
     return nodes
 
-#convert a single edge information from database format to front end format
+
+# convert a single edge information from database format to front end format
 def convertEdge(graph, dic):
     result = {}
     for key, value in dic.items():
@@ -82,7 +90,8 @@ def convertEdge(graph, dic):
             result[key] = value
     return result
 
-#convert a series of edges information from databse format to front end format
+
+# convert a series of edges information from databse format to front end format
 def convertEdges(graph, response, edges):
     for item in response:
         if (item['type'] == 'edge' and item['label'] != 'vertex'):
@@ -94,21 +103,24 @@ def getNode(request, key, value):
     graph = getGraph(request.META['HTTP_USER_AGENT'])
     abstract = graphs[graph]["abstract"]
     script = ""
-    if key  == "id":
+    if key == "id":
         script += "%s.V(%s);" % (abstract, value)
     elif key == "name":
         script += "%s.V().has('name', textContainsPrefix('%s'));" % (abstract, value)
     response = GremlinRestClient(server).execute(script)[1]
     return HttpResponse(json.dumps(convertNodes(graph, response, [])))
 
+
 def getEdge(request, source, destination):
     graph = getGraph(request.META['HTTP_USER_AGENT'])
     abstract = graphs[graph]["abstract"]
     script = "%s.V().has('name', 'INDEX').union(" % abstract
     script += "%s.E().has('INDEX', '%s'), " % (abstract, index(source, destination))
-    script += "%s.E().has('INDEX', '%s')).limit(%d).unique()" % (abstract, index(destination, source), JSON["CountLimit"])
+    script += "%s.E().has('INDEX', '%s')).limit(%d).unique()" % (
+    abstract, index(destination, source), JSON["CountLimit"])
     response = GremlinRestClient(server).execute(script)[1]
     return HttpResponse(json.dumps(convertEdges(graph, response, [])))
+
 
 @csrf_exempt
 def addNode(request):
@@ -119,11 +131,13 @@ def addNode(request):
         return HttpResponse(json.dumps({"message": "dictionary needs 'type' field."}))
     if "name" not in dic:
         return HttpResponse(json.dumps({"message": "dictionary needs 'name' field."}))
-    script = "%s.V().hasLabel('%s').has('name', '%s').count()" % (abstract, labelConvert(True, True, dic['type']), dic['name'])
+    script = "%s.V().hasLabel('%s').has('name', '%s').count()" % (
+    abstract, labelConvert(True, True, dic['type']), dic['name'])
     count = GremlinRestClient(server).execute(script)[1][0]
     if count > 0:
-        return HttpResponse(json.dumps({"message": "database already has this vertex(type: '%s', name: '%s')" % (dic['type'], dic['name'])}))
-    
+        return HttpResponse(json.dumps(
+            {"message": "database already has this vertex(type: '%s', name: '%s')" % (dic['type'], dic['name'])}))
+
     script = "%s.addV(label, '%s', " % (abstract, labelConvert(True, True, dic['type']))
     pro = graphs[graph]["properties"]
     for key, value in dic.items():
@@ -131,31 +145,33 @@ def addNode(request):
             script += "'%s', '%s', " % (key, value)
     script += ")"
     response = GremlinRestClient(server).execute(script)[1]
-    
+
     return HttpResponse(json.dumps(convertNodes(graph, response, [])))
+
 
 @csrf_exempt
 def addEdge(request):
     graph = getGraph(request.META['HTTP_USER_AGENT'])
     abstract = graphs[graph]["abstract"]
     dic = json.loads(request.body)
-    if  "type" not in dic:
+    if "type" not in dic:
         return HttpResponse(json.dumps({"message": "dictionary needs 'type' field."}))
     if "srcID" not in dic:
         return HttpResponse(json.dumps({"message": "dictionary needs 'srcID' field."}))
     if "dstID" not in dic:
         return HttpResponse(json.dumps({"message": "dictionary needs 'dstID' field."}))
 
-    #check whether srcID and dstID exist in database
+    # check whether srcID and dstID exist in database
     script = "%s.V(%s).count()" % (abstract, dic['srcID'])
     if GremlinRestClient(server).execute(script)[1][0] == 0:
-        return HttpResponse(json.dumps({"message" : "srcID doesn't exist in database"}))
+        return HttpResponse(json.dumps({"message": "srcID doesn't exist in database"}))
     script = "%s.V(%s).count()" % (abstract, dic['dstID'])
     if GremlinRestClient(server).execute(script)[1][0] == 0:
-        return HttpResponse(json.dumps({"message" : "dstID doesn't exist in database"}))
-    
-    #insert edge into database
-    script = "%s.V(%s).next().addEdge('%s', %s.V(%s).next(), " % (abstract, dic['srcID'], labelConvert(False, True, dic['type']), abstract, dic['dstID'])
+        return HttpResponse(json.dumps({"message": "dstID doesn't exist in database"}))
+
+    # insert edge into database
+    script = "%s.V(%s).next().addEdge('%s', %s.V(%s).next(), " % (
+    abstract, dic['srcID'], labelConvert(False, True, dic['type']), abstract, dic['dstID'])
     pro = graphs[graph]["properties"]
     for key, value in dic.items():
         if key in pro:
@@ -164,13 +180,15 @@ def addEdge(request):
     response = GremlinRestClient(server).execute(script)[1]
     return HttpResponse(json.dumps(convertEdges(graph, response, [])))
 
+
 @csrf_exempt
 def dropNode(request, id):
     graph = getGraph(request.META['HTTP_USER_AGENT'])
     abstract = graphs[graph]["abstract"]
     script = "%s.V(%s).drop()" % (abstract, id)
     GremlinRestClient(server).execute(script)
-    return HttpResponse(json.dumps({"message" : "finished"}))
+    return HttpResponse(json.dumps({"message": "finished"}))
+
 
 @csrf_exempt
 def dropEdge(request, id):
@@ -178,14 +196,15 @@ def dropEdge(request, id):
     abstract = graphs[graph]["abstract"]
     script = "%s.E('%s').drop()" % (abstract, id)
     GremlinRestClient(server).execute(script)
-    return HttpResponse(json.dumps({"message" : "finished"}))
+    return HttpResponse(json.dumps({"message": "finished"}))
+
 
 def getNeighborType(request, id):
     graph = getGraph(request.META['HTTP_USER_AGENT'])
     abstract = graphs[graph]["abstract"]
     result = {}
 
-    #get neighborhoods vertices types
+    # get neighborhoods vertices types
     VTypeList = []
     script = "%s.V(%s).both().label().unique()" % (abstract, id)
     response = GremlinRestClient(server).execute(script)[1]
@@ -194,7 +213,7 @@ def getNeighborType(request, id):
             VTypeList.append(labelConvert(True, False, type))
     result["VType"] = VTypeList
 
-    #get neighborhoods edges types
+    # get neighborhoods edges types
     ETypeList = []
     script = "%s.V(%s).bothE().label().unique()" % (abstract, id)
     response = GremlinRestClient(server).execute(script)[1]
@@ -215,7 +234,7 @@ def getNeighborhoods(request):
     VLimit = ""
     ELimit = ""
     dic = json.loads(request.body)
-    
+
     if "id" not in dic:
         return HttpResponse(json.dumps({"message": "dictionary needs 'id' field."}))
     if "VType" in dic and dic['VType'] != "all":
@@ -223,18 +242,18 @@ def getNeighborhoods(request):
     if "EType" in dic and dic['EType'] != "all":
         ELimit = ".hasLabel('%s')" % labelConvert(False, True, dic['EType'])
 
-    #get neighborhoods vertices
+    # get neighborhoods vertices
     script = "%s.V(%s).both()%s.unique()" % (abstract, dic['id'], VLimit)
     response = GremlinRestClient(server).execute(script)[1]
     if len(response) == 0:
-        return HttpResponse(json.dumps({'nodes' : [], 'edges' : []}))
+        return HttpResponse(json.dumps({'nodes': [], 'edges': []}))
     result['nodes'] = convertNodes(graph, response, [])
 
-    #get input node
+    # get input node
     script = "%s.V(%s).values('name').limit(1)" % (abstract, dic['id'])
     inputNode = GremlinRestClient(server).execute(script)[1][0]
 
-    #get neighborhoods edges
+    # get neighborhoods edges
     edgeIndex = set()
     resultEdges = []
     for node in result['nodes']:
@@ -248,27 +267,27 @@ def getNeighborhoods(request):
         thread.start()
     for thread in threadList:
         thread.join()
-    
+
     result['edges'] = resultEdges
 
     return HttpResponse(json.dumps(result))
+
 
 def getNeigh(request, key, value):
     graph = getGraph(request.META['HTTP_USER_AGENT'])
     abstract = graphs[graph]["abstract"]
     if key != "id":
         return HttpResponse(json.dumps([]))
-    
-    #get neighborhoods vertices
+
+    # get neighborhoods vertices
     script = "%s.V(%s).both().limit(%d).unique();" % (abstract, value, JSON["CountLimit"])
     response = GremlinRestClient(server).execute(script)[1]
     nodes = convertNodes(graph, response, [])
-    
-    #get neighborhoods edges
+
+    # get neighborhoods edges
     script = "%s.V(%s).bothE().limit(%d).unique();" % (abstract, value, JSON["CountLimit"])
     response = GremlinRestClient(server).execute(script)[1]
     edges = convertEdges(graph, response, [])
-
 
     result = {}
     result['edges'] = edges
@@ -280,7 +299,8 @@ def judgeAdj(graph, singleV, multipleV):
     abstract = graphs[graph]["abstract"]
     script = "%s.V().has('name', 'INDEX').limit(1).union(" % abstract
     for vertex in multipleV:
-        script += "%s.E().has('INDEX', within('%s', '%s')).limit(1), " % (abstract, index(singleV, vertex), index(vertex, singleV))
+        script += "%s.E().has('INDEX', within('%s', '%s')).limit(1), " % (
+        abstract, index(singleV, vertex), index(vertex, singleV))
     script += ").values('INDEX').unique()"
     result = set()
 
@@ -288,6 +308,7 @@ def judgeAdj(graph, singleV, multipleV):
         result.add(item.split("-****-")[0])
         result.add(item.split("-****-")[1])
     return result & multipleV
+
 
 def getAdjNodes(graph, resultNodes):
     abstract = graphs[graph]["abstract"]
@@ -310,8 +331,8 @@ def commonAdjacent(request):
     inputs = {}
     inputNodes = set(json.loads(request.body))
     inputSet = inputNodes.copy()
-    
-    #get vertices' adjacent edges' counts and sort
+
+    # get vertices' adjacent edges' counts and sort
     threadList = []
     for i in range(0, JSON["threadNum"]):
         thread = adjCountThread(graph)
@@ -320,7 +341,7 @@ def commonAdjacent(request):
     for thread in threadList:
         thread.join()
 
-    inputs = sorted(inputs.iteritems(), key = lambda x:x[1])
+    inputs = sorted(inputs.iteritems(), key=lambda x: x[1])
 
     resultNodes = set()
     if len(inputs) != 0:
@@ -331,12 +352,11 @@ def commonAdjacent(request):
         if len(resultNodes) == 0:
             break
         resultNodes = judgeAdj(graph, inputs[i][0], resultNodes)
-    
+
     result = {}
     result['nodes'] = getAdjNodes(graph, resultNodes)
     edgeIndex = set()
     resultEdges = []
-
 
     for nodeA in inputNodes:
         for nodeB in resultNodes:
@@ -355,14 +375,17 @@ def commonAdjacent(request):
 
     return HttpResponse(json.dumps(result))
 
+
 inputSet = set()
 inputs = {}
 threadLock = threading.Lock()
+
+
 class adjCountThread(threading.Thread):
     def __init__(self, graph):
         threading.Thread.__init__(self)
         self.graph = graph
-    
+
     def run(self):
         abstract = graphs[self.graph]["abstract"]
         while True:
@@ -372,15 +395,18 @@ class adjCountThread(threading.Thread):
                 break
             name = inputSet.pop()
             threadLock.release()
-            
+
             script = "%s.V().has('name', '%s').bothE().limit(20000).count()" % (abstract, name)
             response = GremlinRestClient(server).execute(script)[1][0]
             inputs[name] = response
 
+
 edgeIndex = set()
 resultEdges = []
+
+
 class getAdjEdgesThread(threading.Thread):
-    def __init__(self, graph, ELimit = ""):
+    def __init__(self, graph, ELimit=""):
         threading.Thread.__init__(self)
         self.graph = graph
         self.ELimit = ELimit
@@ -395,7 +421,8 @@ class getAdjEdgesThread(threading.Thread):
                 return
             script = "%s.V().has('name', 'INDEX').limit(1).union(" % abstract
             for i in range(0, min(8, len(edgeIndex))):
-                script += "%s.E().has('INDEX', '%s')%s.limit(%d), " % (abstract, edgeIndex.pop(), self.ELimit, JSON["CountLimit"] / 5)
+                script += "%s.E().has('INDEX', '%s')%s.limit(%d), " % (
+                abstract, edgeIndex.pop(), self.ELimit, JSON["CountLimit"] / 5)
             script += ")"
             threadLock.release()
 
@@ -405,7 +432,8 @@ class getAdjEdgesThread(threading.Thread):
             resultEdges = convertEdges(self.graph, response, resultEdges)
             threadLock.release()
 
-#knowledgeBase only
+
+# knowledgeBase only
 def groupCount(request, type):
     graph = getGraph(request.META['HTTP_USER_AGENT'])
     abstract = graphs[graph]["abstract"]
@@ -437,4 +465,3 @@ def groupCount(request, type):
         else:
             dic[item] = 1
     return HttpResponse(json.dumps(dic))
-

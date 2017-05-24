@@ -1,18 +1,20 @@
 #!/usr/bin python
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 
-from django.http import HttpResponse
 import json
 import os
-import sys
-#reload(sys)
-#sys.setdefaultencoding("utf-8")
+
+from django.http import HttpResponse
+
+
+# reload(sys)
+# sys.setdefaultencoding("utf-8")
 
 def getMonitorInfo(request):
-    #cache data
+    # cache data
     nodes = set()
 
-    #return data
+    # return data
     data = {}
     data["nodes"] = []
     data["edges"] = {}
@@ -20,7 +22,8 @@ def getMonitorInfo(request):
     categories = ["normal", "abnormal"]
     for category in categories:
         categoryData = {}
-        categoryDir = os.path.join("/usr/local/security-system-server/security_system/monitor_system/displayData", category)
+        categoryDir = os.path.join("/usr/local/security-system-server/security_system/monitor_system/displayData",
+                                   category)
         fileList = os.listdir(categoryDir)
         for i in range(len(fileList)):
             fileData = []

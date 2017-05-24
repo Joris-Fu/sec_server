@@ -1,6 +1,7 @@
-from django.contrib.auth.models import User, Group
 from rest_framework import serializers
+
 from queryAPI.models import QueryAPI
+
 
 class QueryAPISerializer(serializers.ModelSerializer):
     class Meta:

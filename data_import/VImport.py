@@ -1,29 +1,30 @@
 #!/usr/bin python
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 
-import time
 import json
-import codecs
-import threading
-from data_preprocess import *
-from client import GremlinRestClient
 import sys
+import threading
+
+from client import GremlinRestClient
+
+from data_preprocess import *
+
 reload(sys)
-sys.setdefaultencoding( "utf-8" )
+sys.setdefaultencoding("utf-8")
+
 
 class VImport(object):
-
-    #Configuration parameters
+    # Configuration parameters
     batchNum = 100
     threadNum = 8
     threadLock = threading.Lock()
     sleepTime = 0.005
-    
-    #Debug parameter
+
+    # Debug parameter
     importRecord = []
     speedPrintInterval = 1
     VCount = 0
-    
+
     def __init__(self, vertices, graph, server):
         self.vertices = vertices
         self.Graph = graph
@@ -36,10 +37,11 @@ class VImport(object):
             return
         time.sleep(0.5)
         self.__removeDuplVer()
-        print "vertices import begin..."
+        print
+        "vertices import begin..."
         time.sleep(0.5)
 
-        #多线程插入
+        # 多线程插入
         begin = time.time()
         threadList = []
         for i in range(0, self.threadNum):
@@ -50,17 +52,21 @@ class VImport(object):
             thread.join()
         end = time.time()
 
-        print "vertices import finish, sum: %d, time: %fs, avgSpeed: %dv/s" % (self.VCount, end - begin, int(self.VCount / (end - begin)))
+        print
+        "vertices import finish, sum: %d, time: %fs, avgSpeed: %dv/s" % (
+        self.VCount, end - begin, int(self.VCount / (end - begin)))
 
     def __removeDuplVer(self):
-        print "remove duplicate vertices..."
+        print
+        "remove duplicate vertices..."
         VType = set()
         for vertex in self.vertices:
             VType.add(vertex['type'])
 
         existed = set()
         for type in VType:
-            response = GremlinRestClient(self.server).execute("%s.V().hasLabel('v_%s').values('name')" % (self.graph, type))[1]
+            response = \
+            GremlinRestClient(self.server).execute("%s.V().hasLabel('v_%s').values('name')" % (self.graph, type))[1]
             for vertex in response:
                 existed.add((type, str(vertex)))
         tempList = []
@@ -71,9 +77,8 @@ class VImport(object):
 
 
 class VThread(threading.Thread):
-        
     slowStart = 4
-    
+
     def __init__(self, parent):
         threading.Thread.__init__(self)
         self.parent = parent
@@ -82,17 +87,18 @@ class VThread(threading.Thread):
         parent = self.parent
         while True:
             parent.threadLock.acquire()
-            
-            #Debug speed
+
+            # Debug speed
             if len(parent.importRecord) > 0:
                 now = time.time()
                 if now - parent.importRecord[0][1] >= parent.speedPrintInterval:
                     batchCount = 0
                     for recode in parent.importRecord:
                         batchCount += recode[0]
-                    print "%dk %dv/s" % ((int(parent.VCount) / 1000), int(batchCount / (now-parent.importRecord[0][1])))
+                    print
+                    "%dk %dv/s" % ((int(parent.VCount) / 1000), int(batchCount / (now - parent.importRecord[0][1])))
                     parent.importRecord = []
-                        
+
             if len(parent.vertices) == parent.VCount:
                 parent.threadLock.release()
                 break
@@ -102,30 +108,30 @@ class VThread(threading.Thread):
                 end = end / self.slowStart
                 self.slowStart -= 1
             end = min(len(parent.vertices) - parent.VCount, end)
-            list = parent.vertices[parent.VCount : parent.VCount + end]
+            list = parent.vertices[parent.VCount: parent.VCount + end]
             parent.VCount += end
             parent.importRecord.append([end, time.time()])
-            
+
             parent.threadLock.release()
-            
+
             self.VScript(list)
 
-    #edit gremlin statements, insert into the database
+    # edit gremlin statements, insert into the database
     def VScript(self, list):
         parent = self.parent
         script = ""
         bindings = {}
-        
+
         verTypeDic = {}
         proKeyDic = {}
         proValueDic = {}
-        
+
         jsonV = parent.JSON['vertices']
         for item in list:
             v = jsonV[item['type']]
-            
+
             script += "%s.addVertex(label, '%s', " % (parent.Graph, v['key'])
-            
+
             properties = v['properties']
             for key, value in item.items():
                 if key in properties:
@@ -137,8 +143,6 @@ class VThread(threading.Thread):
                         bindings["pV%d" % len(proValueDic)] = value
                         proValueDic[value] = len(proValueDic)
             script += ");\n"
-            
+
         GremlinRestClient(parent.server).execute(script, bindings)
         time.sleep(parent.sleepTime)
-
-
