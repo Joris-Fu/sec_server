@@ -1,11 +1,13 @@
+# -*- coding:utf-8 -*-
 import json
-import sys
 
 from django.http import HttpResponse
-from models import *
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
+from knowledgeBase.models import vulnerability, device, vendor, instance, dev2vul
+
+
+# reload(sys)
+# sys.setdefaultencoding("utf-8")
 
 
 def groupCount(request, type):

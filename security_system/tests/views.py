@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
-from models import MyUser
+from tests.models import MyUser
 
 '''
 class UserForm(forms.Form):
@@ -29,7 +29,7 @@ class UserFormLogin(forms.Form):
 
 def check_code(request):
     import io
-    import check_code as CheckCode
+    from tests import check_code as CheckCode
     stream = io.BytesIO()
     img, code = CheckCode.create_validate_code()
     img.save(stream, "png")

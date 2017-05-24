@@ -1,15 +1,18 @@
 # -*-coding:utf-8-*-
 import datetime
 import json
+import os
 # reload(sys)
 # sys.setdefaultencoding("utf-8")
 import threading
 
-from client import GremlinRestClient
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-JSON = json.load(file("/usr/local/security-system-server/security_system/queryAPI/properties.json"))
+from queryAPI import threatcrowd, weiboheat
+from queryAPI.client import GremlinRestClient
+
+JSON = json.load(open(os.path.dirname(os.path.realpath(__file__)) + os.sep + "properties.json"))
 server = JSON["server"]
 graphs = JSON["graphs"]
 proConvert = JSON["proConvert"]
@@ -132,7 +135,7 @@ def getEdge(request, source, destination):
     script = "%s.V().has('name', 'INDEX').union(" % abstract
     script += "%s.E().has('INDEX', '%s'), " % (abstract, index(source, destination))
     script += "%s.E().has('INDEX', '%s')).limit(%d).unique()" % (
-    abstract, index(destination, source), JSON["CountLimit"])
+        abstract, index(destination, source), JSON["CountLimit"])
     response = GremlinRestClient(server).execute(script)[1]
     return HttpResponse(json.dumps(convertEdges(graph, response, [])))
 
@@ -147,7 +150,7 @@ def addNode(request):
     if "name" not in dic:
         return HttpResponse(json.dumps({"message": "dictionary needs 'name' field."}))
     script = "%s.V().hasLabel('%s').has('name', '%s').count()" % (
-    abstract, labelConvert(True, True, dic['type']), dic['name'])
+        abstract, labelConvert(True, True, dic['type']), dic['name'])
     count = GremlinRestClient(server).execute(script)[1][0]
     if count > 0:
         return HttpResponse(json.dumps(
@@ -192,7 +195,7 @@ def addEdge(request):
 
     # insert edge into database
     script = "%s.V(%s).next().addEdge('%s', %s.V(%s).next(), " % (
-    abstract, dic['srcID'], labelConvert(False, True, dic['type']), abstract, dic['dstID'])
+        abstract, dic['srcID'], labelConvert(False, True, dic['type']), abstract, dic['dstID'])
     pro = graphs[graph]["properties"]
     for key, value in dic.items():
         if key in pro:
@@ -330,7 +333,7 @@ def judgeAdj(graph, singleV, multipleV):
     script = "%s.V().has('name', 'INDEX').limit(1).union(" % abstract
     for vertex in multipleV:
         script += "%s.E().has('INDEX', within('%s', '%s')).limit(1), " % (
-        abstract, index(singleV, vertex), index(vertex, singleV))
+            abstract, index(singleV, vertex), index(vertex, singleV))
     script += ").values('INDEX').unique()"
     result = set()
 
@@ -452,7 +455,7 @@ class getAdjEdgesThread(threading.Thread):
             script = "%s.V().has('name', 'INDEX').limit(1).union(" % abstract
             for i in range(0, min(8, len(edgeIndex))):
                 script += "%s.E().has('INDEX', '%s')%s.limit(%d), " % (
-                abstract, edgeIndex.pop(), self.ELimit, JSON["CountLimit"] / 5)
+                    abstract, edgeIndex.pop(), self.ELimit, JSON["CountLimit"] / 5)
             script += ")"
             threadLock.release()
 
@@ -1050,7 +1053,7 @@ def getCNContent(request, date, source):
             yqms['content'] = row[4]
             result.append(yqms)
 
-        ########################################## update on 2016.12.12 ##################################################
+            ########################################## update on 2016.12.12 ##################################################
     if (source == '0' or source == 'anqniu'):
         cur.execute("select title,author,time,article,tags,kind from anqniu" + dateSearch)
         results = cur.fetchall()
@@ -1063,7 +1066,7 @@ def getCNContent(request, date, source):
             anqniu['tags'] = row[4]
             anqniu['kind'] = row[5]
             result.append(anqniu)
-        ##################################################################################################################
+            ##################################################################################################################
 
     cur.close()
     conn.close()
@@ -1099,17 +1102,17 @@ def getENContent(request, date, source):
             scadanews["url"] = row[2]
             result.append(scadanews)
 
-        ########################################## update on 2016.12.12 ##################################################
-        ##    if (source == '0' or source == 'icscert'):
-        ##        cur.execute("select title,name,date,contents from icscert where date ="+ str(date))
-        ##        results = cur.fetchall()
-        ##        for row in results:
-        ##            icscert = {}
-        ##            icscert['title'] = row[0]
-        ##            icscert['name'] = row[1]
-        ##            icscert['date'] = row[2]
-        ##            icscert['content'] = row[3]
-        ##            result.append(icscert)
+            ########################################## update on 2016.12.12 ##################################################
+            ##    if (source == '0' or source == 'icscert'):
+            ##        cur.execute("select title,name,date,contents from icscert where date ="+ str(date))
+            ##        results = cur.fetchall()
+            ##        for row in results:
+            ##            icscert = {}
+            ##            icscert['title'] = row[0]
+            ##            icscert['name'] = row[1]
+            ##            icscert['date'] = row[2]
+            ##            icscert['content'] = row[3]
+            ##            result.append(icscert)
 
     if (source == '0' or source == 'icscert'):
         if (date == '0'):
@@ -1138,7 +1141,7 @@ def getENContent(request, date, source):
             securityweek["tags"] = row[4]
             securityweek["kind"] = row[5]
             result.append(securityweek)
-        ##################################################################################################################
+            ##################################################################################################################
     cur.close()
     conn.close()
     return HttpResponse(json.dumps(result))
@@ -2605,7 +2608,7 @@ def getStatistics(request):
     return HttpResponse(json.dumps(result))
 
 
-import threatcrowd
+# import threatcrowd
 
 
 def getThreatCrowd(request, type, obj):
@@ -2613,7 +2616,7 @@ def getThreatCrowd(request, type, obj):
     return HttpResponse(json.dumps(results))
 
 
-import weiboheat
+# import weiboheat
 
 
 def getWeiboHeat(request, date_):
