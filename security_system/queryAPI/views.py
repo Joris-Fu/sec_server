@@ -8,8 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render_to_response  
 import os  
 import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
+#reload(sys)
+#sys.setdefaultencoding("utf-8")
 import threading
 
 import datetime
@@ -622,7 +622,7 @@ def getFans(request,flag='3months'):
         row = cur.fetchone()
         result[">1000000"]+=row[0]
         start = start - datetime.timedelta(hours=24)
-    print row
+    print(row)
     cur.close()
     conn.close()
     return HttpResponse(json.dumps(result))
@@ -813,7 +813,7 @@ def getSegPaper(request,itemOnePage,no):
         itemsum = itemsum + 1
 
     result = []
-    result.append(int(itemsum))  #鎬诲叡椤甸潰�?
+    result.append(int(itemsum))  #鎬诲叡椤甸潰�?
 
     if no <= 0:
         cur.close()
@@ -881,7 +881,7 @@ def getSegShop(request,itemOnePage,no,flag):
     if int(row[0]) % itemOnePage != 0:
         itemsum = itemsum + 1
     result = []
-    result.append(int(itemsum))  #鎬诲叡椤甸潰�?
+    result.append(int(itemsum))  #鎬诲叡椤甸潰�?
 
     if no <= 0:
         cur.close()
@@ -1473,7 +1473,7 @@ def getSegCve(request,itemOnePage,no):
         itemsum = itemsum + 1
     
     result = []
-    result.append(int(itemsum))  #鎬诲叡椤甸潰�?
+    result.append(int(itemsum))  #鎬诲叡椤甸潰�?
 
     if no <= 0:
         cur.close()
@@ -1557,7 +1557,7 @@ def getSegIps(request,itemOnePage,no):
     if int(row[0]) % itemOnePage != 0:
         itemsum = itemsum + 1
     result = []
-    result.append(int(itemsum))  #鎬诲叡椤甸潰�?
+    result.append(int(itemsum))  #鎬诲叡椤甸潰�?
 
     if no <= 0:
         cur.close()
@@ -1771,7 +1771,7 @@ def getNews(request,type):
             day=newdate["day"]
             if i>=20:
                 break
-            print i
+            print(i)
             cur.close()
             conn.close()
             return HttpResponse(json.dumps(result))
@@ -1795,7 +1795,7 @@ def getNews(request,type):
         day=newdate["day"]
         if i>=20:
             break
-    print i
+    print(i)
     cur.close()
     conn.close()
     return HttpResponse(json.dumps(result))
@@ -1881,7 +1881,7 @@ def getAttackMap(request,size=-1):
         cur.execute("select time,attacker,attackIP,attackerGeo,targetGeo,attackType,port from attackmap where type = \'"+str(type)+"\'")
     results = cur.fetchall()
     for row in results:
-        print row
+        print(row)
         time=row[0]
         attack = {}
         attack["attacker"]=row[1]
@@ -1892,7 +1892,7 @@ def getAttackMap(request,size=-1):
         attack["port"]=row[6]
         cur.execute("select latitude , longitude from location where place = \'"+attack["attackGeo"]+"\'")
         row= cur.fetchone()
-        print row
+        print(row)
         if row==None:
             attack["attackLatitude"]=0
             attack["attackLongitude"]=0
@@ -1901,7 +1901,7 @@ def getAttackMap(request,size=-1):
             attack["attackLongitude"]=row[1]
         cur.execute("select latitude , longitude from location where place = \'" + attack["targetGeo"] + "\'")
         row = cur.fetchone()
-        print row
+        print(row)
         if row==None:
             attack["targetLatitude"]=0
             attack["targetLongitude"]=0

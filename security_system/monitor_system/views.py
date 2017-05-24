@@ -5,8 +5,8 @@ from django.http import HttpResponse
 import json
 import os
 import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
+#reload(sys)
+#sys.setdefaultencoding("utf-8")
 
 def getMonitorInfo(request):
     #cache data
