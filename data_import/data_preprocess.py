@@ -9,9 +9,6 @@ import struct
 import sys
 import time
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
-
 
 def _remove_duplicate(dict_list):
     val_list = []
@@ -38,9 +35,8 @@ class graph1_DataPreProcess(object):
         file = codecs.open(self.file_path, 'r')
         try:
             lines = file.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
         # Remove title line
@@ -92,9 +88,8 @@ class graph1_DataPreProcess(object):
         file = codecs.open(self.file_path, 'r')
         try:
             lines = file.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
 
@@ -123,18 +118,16 @@ class graph1_DataPreProcess(object):
             pattern_domain = re.compile(r'(Host:)(.*?)(\\)')
             try:
                 domain = pattern_domain.search(return_val).group(2).strip()
-            except StandardError, e:
-                print
-                e
+            except Exception as e:
+                print(e)
             vertices.append({'name': domain, 'type': 'domain'})
 
             # Add url
             pattern_dir = re.compile(r'(\/)(.*?)(HTTP)')
             try:
                 url = domain + '/' + pattern_dir.search(return_val).group(2).strip()
-            except StandardError, e:
-                print
-                e
+            except Exception as e:
+                print(e)
             vertices.append({'name': url, 'type': 'url'})
 
             timeArray = time.strptime(record_time, "%Y%m%d%H%M%S")
@@ -180,9 +173,8 @@ class graph2_DataPreProcess(object):
         file = codecs.open(self.file_path, 'r')
         try:
             lines = file.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
 
@@ -225,9 +217,8 @@ class graph2_DataPreProcess(object):
         file = codecs.open(self.file_path, 'r')
         try:
             lines = file.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
 
@@ -272,9 +263,8 @@ class graph2_DataPreProcess(object):
         file = codecs.open(self.file_path, 'r')
         try:
             lines = file.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
 
@@ -328,9 +318,8 @@ class graph2_DataPreProcess(object):
         file = codecs.open(self.file_path, 'r')
         try:
             lines = file.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
 
@@ -377,8 +366,7 @@ def main():
     test = case1_DataPreProcess(r'C:\Users\ye\Desktop\data_import\data_import\data\flow.txt')
     vertices, edges = test.flow_preprocess()
     for v in vertices:
-        print
-        v['name']
+        print(v['name'])
 
 
 if __name__ == '__main__':

@@ -648,8 +648,7 @@ def getFans(request, flag='3months'):
         row = cur.fetchone()
         result[">1000000"] += row[0]
         start = start - datetime.timedelta(hours=24)
-    print
-    row
+    print(row)
     cur.close()
     conn.close()
     return HttpResponse(json.dumps(result))
@@ -1382,8 +1381,7 @@ def getNews(request):
         day = newdate["day"]
         if i >= 20:
             break
-    print
-    i
+    print(i)
     cur.close()
     conn.close()
     return HttpResponse(json.dumps(result))
@@ -1473,8 +1471,7 @@ def getAttackMap(request, size=-1):
                 type) + "\'")
     results = cur.fetchall()
     for row in results:
-        print
-        row
+        print(row)
         time = row[0]
         attack = {}
         attack["attacker"] = row[1]
@@ -1485,8 +1482,7 @@ def getAttackMap(request, size=-1):
         attack["port"] = row[6]
         cur.execute("select latitude , longitude from location where place = \'" + attack["attackGeo"] + "\'")
         row = cur.fetchone()
-        print
-        row
+        print(row)
         if row == None:
             attack["attackLatitude"] = 0
             attack["attackLongitude"] = 0
@@ -1495,8 +1491,7 @@ def getAttackMap(request, size=-1):
             attack["attackLongitude"] = row[1]
         cur.execute("select latitude , longitude from location where place = \'" + attack["targetGeo"] + "\'")
         row = cur.fetchone()
-        print
-        row
+        print(row)
         if row == None:
             attack["targetLatitude"] = 0
             attack["targetLongitude"] = 0

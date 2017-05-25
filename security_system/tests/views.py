@@ -91,8 +91,7 @@ def login2(request):
         # input_code = request.session['checkcode'].upper()
         username = request.POST['username']  # uf.cleaned_data['username']
         password = request.POST['password']  # uf.cleaned_data['password']
-        print
-        username, password
+        print(username, password)
         # checkcode = uf.cleaned_data['checkcode'].upper()
         r = {}
 

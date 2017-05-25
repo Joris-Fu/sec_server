@@ -102,5 +102,4 @@ def get_config():
 
 
 if __name__ == "__main__":
-    print
-    """You shouldn't be running this directly; it is used by setup.py."""
+    print("""You shouldn't be running this directly; it is used by setup.py.""")

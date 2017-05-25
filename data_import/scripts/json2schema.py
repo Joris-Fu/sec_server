@@ -44,8 +44,7 @@ mgmt = graph.openManagement();
 
         for edge in self.JSON["edges"]:
             type = "e_" + edge["type"]
-            print
-            type
+            print(type)
             fileHandler.write(
                 "\nif(!mgmt.containsEdgeLabel(\"%s\")){mgmt.makeEdgeLabel('%s').multiplicity(Multiplicity.%s).make();}" % (
                 type, type, edge["multiplicity"]))

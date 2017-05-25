@@ -82,16 +82,14 @@ class DatabaseTest(unittest.TestCase):
         data = [[generator(i, j) for j in range(len(columndefs))]
                 for i in range(self.rows)]
         if self.debug:
-            print
-            data
+            print(data)
         self.cursor.executemany(insert_statement, data)
         self.connection.commit()
         # verify
         self.cursor.execute('select * from %s' % self.table)
         l = self.cursor.fetchall()
         if self.debug:
-            print
-            l
+            print(l)
         self.assertEquals(len(l), self.rows)
         try:
             for i in range(self.rows):
@@ -155,8 +153,7 @@ class DatabaseTest(unittest.TestCase):
         try:
             self.cursor.execute(insert_statement, (0, '0' * 256))
         except Warning:
-            if self.debug: print
-            self.cursor.messages
+            if self.debug: print(self.cursor.messages)
         except self.connection.DataError:
             pass
         else:
@@ -171,8 +168,7 @@ class DatabaseTest(unittest.TestCase):
                     data.append(generator(i, j))
                 self.cursor.execute(insert_statement, tuple(data))
         except Warning:
-            if self.debug: print
-            self.cursor.messages
+            if self.debug: print(self.cursor.messages)
         except self.connection.DataError:
             pass
         else:
@@ -185,8 +181,7 @@ class DatabaseTest(unittest.TestCase):
                     for i in range(self.rows)]
             self.cursor.executemany(insert_statement, data)
         except Warning:
-            if self.debug: print
-            self.cursor.messages
+            if self.debug: print(self.cursor.messages)
         except self.connection.DataError:
             pass
         else:

@@ -9,9 +9,6 @@ from client import GremlinRestClient
 
 from data_preprocess import *
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
-
 
 class EImport(object):
     # Configuration parameters
@@ -49,8 +46,7 @@ class EImport(object):
             for i in range(len(response)/2):
                 self.vertices[(type, response[2*i])] = response[2*i+1]
         """
-        print
-        "edges import begin..."
+        print("edges import begin...")
         begin = time.time()
         # 多线程插入
         threadList = []
@@ -62,9 +58,8 @@ class EImport(object):
             thread.join()
         end = time.time()
 
-        print
-        "edges import finish, sum: %d, time: %fs, avgSpeed: %de/s" % (
-        self.ECount, end - begin, int(self.ECount / (end - begin)))
+        print("edges import finish, sum: %d, time: %fs, avgSpeed: %de/s" % (
+        self.ECount, end - begin, int(self.ECount / (end - begin))))
 
 
 class EThread(threading.Thread):
@@ -86,8 +81,7 @@ class EThread(threading.Thread):
                     batchCount = 0
                     for recode in parent.importRecord:
                         batchCount += recode[0]
-                    print
-                    "%dk %de/s" % ((int(parent.ECount) / 1000), int(batchCount / (now - parent.importRecord[0][1])))
+                    print("%dk %de/s" % ((int(parent.ECount) / 1000), int(batchCount / (now - parent.importRecord[0][1]))))
                     parent.importRecord = []
 
             if len(parent.edges) == parent.ECount:
@@ -176,12 +170,9 @@ class EThread(threading.Thread):
         try:
             GremlinRestClient(parent.server).execute(script, bindings)
         except:
-            print
-            script
-            print
-            bindings
-            print
-            "\n"
+            print(script)
+            print(bindings)
+            print("\n")
         timeC = time.time()
 
         # print script

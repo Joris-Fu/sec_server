@@ -81,7 +81,7 @@ class test_MySQLdb(capabilities.DatabaseTest):
         from MySQLdb.constants import ER
         try:
             self.cursor.execute("describe some_non_existent_table");
-        except self.connection.ProgrammingError, msg:
+        except self.connection.ProgrammingError as msg:
             self.failUnless(msg[0] == ER.NO_SUCH_TABLE)
 
     def test_ping(self):
@@ -95,5 +95,4 @@ if __name__ == '__main__':
         gc.enable()
         gc.set_debug(gc.DEBUG_LEAK)
     unittest.main()
-    print
-    '''"Huh-huh, he said 'unit'." -- Butthead'''
+    print('''"Huh-huh, he said 'unit'." -- Butthead''')

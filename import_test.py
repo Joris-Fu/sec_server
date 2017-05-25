@@ -18,9 +18,8 @@ class DataImport(object):
 
         try:
             file = codecs.open(self.file_path, 'r', encoding='utf-8')
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
 
         lines = file.readlines()
         lines.pop(0)
@@ -33,12 +32,9 @@ class DataImport(object):
             count += 1
             self.graph.create(source)
             tmp = time.time()
-            print
-            "Inserting: " + line[2]
-            print
-            "Runtime: " + str(tmp - start)
-            print
-            "Number: " + str(count)
+            print("Inserting: " + line[2])
+            print("Runtime: " + str(tmp - start))
+            print("Number: " + str(count))
 
 
 def main():
@@ -47,8 +43,7 @@ def main():
 
     DataImport(graph, "E:\source_data\offline_attk_qihu_acc_edu").flow_import()
     end = time.time()
-    print
-    "Total time: " + str(end - start)
+    print("Total time: " + str(end - start))
 
 
 if __name__ == '__main__':

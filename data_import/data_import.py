@@ -10,9 +10,6 @@ from data_preprocess_knowledgeBase import *
 
 from data_preprocess import *
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
-
 
 class DataImport(object):
     def __init__(self, filePath, server="http://10.1.1.48:8182"):
@@ -20,8 +17,7 @@ class DataImport(object):
         self.filePath = filePath
 
     def execute(self, graph, type, threadLock=None):
-        print
-        "%s_%s %s import process begin..." % (graph, type, self.filePath)
+        print("%s_%s %s import process begin..." % (graph, type, self.filePath))
         if graph == "graph1":
             object = graph1_DataPreProcess(self.filePath)
         elif graph == "graph2":
@@ -33,10 +29,8 @@ class DataImport(object):
             return getattr(object, "%s_preprocess" % type)()
 
         vertices, edges = getattr(object, "%s_preprocess" % type)()
-        print
-        "%d vertices, %d edges" % (len(vertices), len(edges))
-        print
-        "preprocess finish"
+        print("%d vertices, %d edges" % (len(vertices), len(edges)))
+        print("preprocess finish")
 
         if threadLock != None:
             threadLock.acquire()
@@ -45,5 +39,4 @@ class DataImport(object):
             threadLock.release()
         time.sleep(1)
         EImport(edges, graph, self.server).execute()
-        print
-        "\n"
+        print("\n")

@@ -37,8 +37,7 @@ class VImport(object):
             return
         time.sleep(0.5)
         self.__removeDuplVer()
-        print
-        "vertices import begin..."
+        print("vertices import begin...")
         time.sleep(0.5)
 
         # 多线程插入
@@ -52,13 +51,11 @@ class VImport(object):
             thread.join()
         end = time.time()
 
-        print
-        "vertices import finish, sum: %d, time: %fs, avgSpeed: %dv/s" % (
-        self.VCount, end - begin, int(self.VCount / (end - begin)))
+        print("vertices import finish, sum: %d, time: %fs, avgSpeed: %dv/s" % (
+        self.VCount, end - begin, int(self.VCount / (end - begin))))
 
     def __removeDuplVer(self):
-        print
-        "remove duplicate vertices..."
+        print("remove duplicate vertices...")
         VType = set()
         for vertex in self.vertices:
             VType.add(vertex['type'])
@@ -95,8 +92,7 @@ class VThread(threading.Thread):
                     batchCount = 0
                     for recode in parent.importRecord:
                         batchCount += recode[0]
-                    print
-                    "%dk %dv/s" % ((int(parent.VCount) / 1000), int(batchCount / (now - parent.importRecord[0][1])))
+                    print("%dk %dv/s" % ((int(parent.VCount) / 1000), int(batchCount / (now - parent.importRecord[0][1]))))
                     parent.importRecord = []
 
             if len(parent.vertices) == parent.VCount:

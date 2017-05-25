@@ -5,9 +5,6 @@ import codecs
 import json
 import sys
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
-
 
 def _remove_duplicate(dict_list):
     val_list = []
@@ -33,9 +30,8 @@ class knowledgeBase_FormattingProcess(object):
         file = codecs.open(self.file_path[0], 'r')
         try:
             lines = file.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
 
@@ -63,9 +59,8 @@ class knowledgeBase_FormattingProcess(object):
         file = codecs.open(self.file_path[0], 'r')
         try:
             lines = file.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
 
@@ -89,16 +84,14 @@ class knowledgeBase_FormattingProcess(object):
         fileB = codecs.open(self.file_path[1], 'r')  # vendor in fileB
         try:
             ins = json.load(file)
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
         try:
             linesB = fileB.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             fileB.close()
 
@@ -159,16 +152,14 @@ class knowledgeBase_FormattingProcess(object):
         fileB = codecs.open(self.file_path[1], 'r')  # vendor in fileB
         try:
             ins = json.load(file)
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
         try:
             linesB = fileB.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             fileB.close()
 
@@ -225,9 +216,8 @@ class knowledgeBase_FormattingProcess(object):
         file = codecs.open(self.file_path[0], 'r')
         try:
             ins = json.load(file)
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
         for match in ins:
@@ -258,9 +248,8 @@ class knowledgeBase_FormattingProcess(object):
         try:
             lines = file.readlines()
             linesB = fileB.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
             fileB.close()
@@ -308,9 +297,8 @@ class knowledgeBase_FormattingProcess(object):
         file = codecs.open(self.file_path[0], 'r')
         try:
             lines = file.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
 
@@ -336,9 +324,8 @@ class knowledgeBase_FormattingProcess(object):
         file = codecs.open(self.file_path[0], 'r')
         try:
             lines = file.readlines()
-        except StandardError, e:
-            print
-            e
+        except Exception as e:
+            print(e)
         finally:
             file.close()
 
@@ -374,8 +361,7 @@ def main():
     vertices = test.diting_instance_preprocess()
     # test = knowledgeBase_DataPreProcess(["data/knowledgeBase/Camera.json"])
     # v,e = test.camera_instance_preprocess()
-    print
-    vertices
+    print(vertices)
 
 
 if __name__ == '__main__':
