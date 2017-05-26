@@ -10,7 +10,7 @@ class vendor(models.Model):
     url = models.CharField(max_length=255, null=True)
 
 
-class device(models.Model):
+class VulnerabilityDevice(models.Model):
     name = models.CharField(max_length=255, primary_key=True)
     vendor = models.CharField(max_length=255, null=True)
     deviceType = models.CharField(max_length=255, null=True)

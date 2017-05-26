@@ -3,7 +3,7 @@ import json
 
 from django.http import HttpResponse
 
-from knowledgeBase.models import vulnerability, device, vendor, instance, dev2vul
+from knowledgeBase.models import vulnerability, VulnerabilityDevice, vendor, instance, dev2vul
 
 
 # reload(sys)
@@ -15,7 +15,7 @@ def groupCount(request, type):
     if type == "vulYear":
         list = vulnerability.objects.values_list('date')
     elif type == "devType":
-        list = device.objects.values_list('vendor')
+        list = VulnerabilityDevice.objects.values_list('vendor')
     elif type == "venCountry":
         list = vendor.objects.values_list('country')
     elif type == "insCountry":
@@ -23,7 +23,7 @@ def groupCount(request, type):
     elif type == "insProtocol":
         list = instance.objects.values_list('ins_type')
     elif type == "venDevice":
-        list = device.objects.values_list('vendor')
+        list = VulnerabilityDevice.objects.values_list('vendor')
 
     temp = []
     for item in list:
