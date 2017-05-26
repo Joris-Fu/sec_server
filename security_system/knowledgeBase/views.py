@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import json
 
+from django.db import connection
 from django.http import HttpResponse
 
 from knowledgeBase.models import vulnerability, VulnerabilityDevice, vendor, instance, dev2vul
@@ -46,8 +47,35 @@ def groupCount(request, type):
 
 
 def getInstance(request):
-    result = list(instance.objects.values('ip', 'city', 'country', 'ins_type', 'timestamp', 'lat', 'lon', 'port'))
-    return HttpResponse(json.dumps(result))
+    """
+    设备探针菜单的地图显示设备使用此API
+    :param request: 
+    :return: 
+    """
+    cursor = connection.cursor()
+    sql = 'SELECT a.ip, a.city, a.country, a.timestamp, a.lat, a.lon, b.port, b.protocol ' \
+          'FROM knowledgeBase_instance a ' \
+          'left join knowledgeBase_instanceport b on a.name = b.instance_id'
+    cursor.execute(sql)
+    rowset = cursor.fetchall()
+
+    devices = []
+    for row in rowset:
+        dev = dict()
+        dev['ip'] = row[0]
+        if row[1]:
+            dev['city'] = row[1]
+        else:
+            dev['city'] = ''
+        dev['country'] = row[2]
+        dev['timestamp'] = row[3]
+        dev['lat'] = row[4]
+        dev['lon'] = row[5]
+        dev['port'] = row[6]
+        dev['ins_type'] = row[7]
+        devices.append(dev)
+
+    return HttpResponse(json.dumps(devices))
 
 
 def getVulnerability(request):

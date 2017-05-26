@@ -34,3 +34,11 @@ alter table ics_scan.knowledgebase_instance change add_time update_time datetime
 -- # 给设备表和设备Port表增加外键关联
 ALTER TABLE `knowledgeBase_instanceport` ADD INDEX `instance_id_name_idx` (`instance_id`);
 ALTER TABLE `knowledgeBase_instanceport` ADD CONSTRAINT `instance_id_name` FOREIGN KEY (`instance_id`) REFERENCES `knowledgeBase_instance` (`name`);
+
+
+-- # 去掉字段内容中的回车
+UPDATE knowledgeBase_instance SET  lat = REPLACE(REPLACE(lat, CHAR(10), ''), CHAR(13), '');
+UPDATE knowledgeBase_instance SET  lon = REPLACE(REPLACE(lon, CHAR(10), ''), CHAR(13), '');
+
+update knowledgeBase_instance set city='' where city = 'None';
+update knowledgeBase_instance set country='' where country = 'None';
