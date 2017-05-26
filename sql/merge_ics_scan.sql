@@ -31,3 +31,6 @@ alter table knowledgeBase_instance add index index_instance_ip(`ip`);
 
 alter table ics_scan.knowledgebase_instance change add_time update_time datetime null;
 
+-- # 给设备表和设备Port表增加外键关联
+ALTER TABLE `knowledgeBase_instanceport` ADD INDEX `instance_id_name_idx` (`instance_id`);
+ALTER TABLE `knowledgeBase_instanceport` ADD CONSTRAINT `instance_id_name` FOREIGN KEY (`instance_id`) REFERENCES `knowledgeBase_instance` (`name`);
