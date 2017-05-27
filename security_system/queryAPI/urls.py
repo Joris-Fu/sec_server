@@ -24,6 +24,8 @@ urlpatterns = [
     url(r'^api/get/groupCount/(.+)/$', knowledgeBase.groupCount),
     url(r'^api/get/instance/$', knowledgeBase.getInstance),
     url(r'^api/get/vulnerability/$', knowledgeBase.getVulnerability),
+    url(r'^api/protocols$', knowledgeBase.get_protocols),
+    url(r'^api/search$', knowledgeBase.search),
     url(r'^api/post/switchGraph/(.+)/$', views.switchGraph),
 
     url(r'^api/get/Sex/$', views.getSex),

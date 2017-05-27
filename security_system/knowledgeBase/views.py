@@ -1,14 +1,11 @@
 # -*- coding:utf-8 -*-
 import json
 
+from django.core.paginator import Paginator
 from django.db import connection
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
-from knowledgeBase.models import vulnerability, VulnerabilityDevice, vendor, instance, dev2vul
-
-
-# reload(sys)
-# sys.setdefaultencoding("utf-8")
+from knowledgeBase.models import vulnerability, VulnerabilityDevice, vendor, instance, dev2vul, Protocol, Website
 
 
 def groupCount(request, type):
@@ -96,3 +93,222 @@ def getVulnerability(request):
             vul['devices'] = []
 
     return HttpResponse(json.dumps(result))
+
+
+support_keys_for_host = ('ip', 'country', 'city', 'port', 'protocol')
+support_keys_for_web = ('ip', 'port', 'city', 'port')
+support_query_types = ('host', 'web', 'camera')
+page_size = 10
+
+
+def search(request):
+    """
+    API for searching devices
+    :param request: 
+    :return: 
+    """
+    result = ''
+    if request.method == 'GET':
+        query_condition = request.GET.get('q')
+        query_type = request.GET.get('t')
+        page_num = request.GET.get('p')
+
+        try:
+            pn = int(page_num)
+        except Exception:
+            pn = 1
+
+        if not query_type:
+            query_type = 'host'
+
+        if query_type not in support_query_types:
+            query_type = 'host'
+
+        if not query_condition:
+            errmsg = {'error': 'Please enter a query condition!'}
+            return json_response(errmsg)
+
+        search_params = {}
+
+        query_list = query_condition.split(' ')
+        for query in query_list:
+            one_query = query.split(':')
+            if len(one_query) != 2:
+                continue
+
+            search_params[one_query[0]] = one_query[1]
+
+        if query_type == 'host':
+            result, total_page, curr_page, total_num = _get_devices(search_params, pn)
+
+        elif query_type == 'web':
+            result, total_page, curr_page, total_num = _get_website(search_params, pn)
+        else:
+            return json_response({'error': 'Invalid query type!'})
+
+        json_msg = {
+            'result': result,
+            'tp': total_page,
+            'p': curr_page,
+            'tn': total_num
+        }
+    else:
+        json_msg = {
+            'error': 'Wrong HTTP method'
+        }
+
+    return json_response(json_msg)
+
+
+def _get_website(search_params, page_num):
+    if page_num <= 0:
+        page_num = 1
+
+    params = {}
+    for search_key, search_value in search_params.items():
+        if search_key not in support_keys_for_web:
+            continue
+
+        if search_key == 'ip':
+            search_key = 'ip_address'  # ip --> ip_address
+        params[search_key + '__icontains'] = search_value
+
+    all_webs = []
+    if params:
+        query = Website.objects.filter(**params)
+        p = Paginator(query, page_size)
+        total_num = p.count
+        total_page = p.num_pages
+
+        if page_num > total_num:
+            page_num = total_num
+
+        page_rows = p.page(page_num)
+        if page_rows:
+            all_webs = list(page_rows)
+    else:
+        total_num = 0
+        total_page = 0
+
+    return all_webs, total_page, page_num, total_num
+
+
+def _get_devices(search_params, page_num):
+    sql_select = 'SELECT a.ip, a.lat, a.lon, ' \
+                 'a.asn, a.country, a.city,' \
+                 'a.organization, a.isp, a.os,' \
+                 'a.vendor, a.service, a.timestamp,' \
+                 'a.update_time, a.app, b.port,' \
+                 'b.protocol, b.banner, b.status as port_status '
+
+    sql_from = 'FROM knowledgeBase_instance a ' \
+               'left join knowledgeBase_instanceport b on a.name = b.instance_id '
+
+    if search_params:
+        sql_where = 'WHERE '
+
+        sql_params = []
+        for search_key, search_value in search_params.items():
+            if search_key not in support_keys_for_host:
+                continue
+
+            if search_key == 'ip':
+                search_key = 'a.ip_address'  # ip --> ip_address
+            sql_params.append(search_key + ' like "%%%s%%"' % search_value)
+
+        sql_where += ' AND '.join(sql_params)
+    else:
+        sql_where = ''
+
+    sql_count = 'select count(*) ' + sql_from + sql_where
+
+    cursor = connection.cursor()
+    cursor.execute(sql_count)
+    one_row = cursor.fetchone()
+    if one_row:
+        total_num = one_row[0]
+    else:
+        total_num = 0
+
+    total_page, curr_page, from_idx = _get_page_params(page_num, total_num)
+    sql_limit = ' limit %s, %s' % (from_idx, page_size)
+    sql = sql_select + sql_from + sql_where + sql_limit
+
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    rows = cursor.fetchall()
+
+    all_devices = []
+    for row in rows:
+        device = {
+            'ip': row[0],
+            'lat': row[1],
+            'lng': row[2],
+            'asn': row[3],
+            'country': row[4],
+            'city': row[5],
+            'organization': row[6],
+            'ISP': row[7],
+            'dev_type': row[8],
+            'brand': row[9],
+            'status': row[10],
+            'add_time': row[11],
+            'update_time': row[12],
+            'access': row[13],
+            'port': row[14],
+            'protocol': row[15],
+            'banner': row[16],
+            'port_status': row[17],
+        }
+        all_devices.append(device)
+
+    return all_devices, total_page, curr_page, total_num
+
+
+def _get_page_params(page_num, total_num):
+    """
+    Pagination
+    :param request: 
+    :param total_num: 
+    :return: 
+    """
+    if not page_num:
+        curr_page = 1
+    else:
+        curr_page = int(page_num)
+        if curr_page < 0:
+            curr_page = 1
+
+    total_page = int((total_num + page_size - 1) / page_size)
+
+    if total_page < curr_page:
+        curr_page = total_page
+
+    if curr_page <= 0:
+        curr_page = 1
+
+    from_idx = (curr_page - 1) * page_size
+
+    return total_page, curr_page, from_idx
+
+
+def get_protocols(request):
+    """
+    API for get all protocols
+    :param request: 
+    :return: 
+    """
+    protocols = Protocol.objects.values()
+    detail = {'protocols': list(protocols)}
+    return json_response(detail)
+
+
+def json_response(msg, ensure_ascii=False):
+    """
+    给django的JsonResponse增加中文编码支持
+    :param ensure_ascii: 
+    :param msg:
+    :return:
+    """
+    dumps_params = {'ensure_ascii': ensure_ascii}
+    return JsonResponse(msg, json_dumps_params=dumps_params)
