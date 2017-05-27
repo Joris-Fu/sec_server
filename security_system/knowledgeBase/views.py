@@ -6,6 +6,7 @@ from django.db import connection
 from django.http import HttpResponse, JsonResponse
 
 from knowledgeBase.models import vulnerability, VulnerabilityDevice, vendor, instance, dev2vul, Protocol, Website
+from knowledgeBase.models import InstancePort
 
 
 def groupCount(request, type):
@@ -19,7 +20,7 @@ def groupCount(request, type):
     elif type == "insCountry":
         list = instance.objects.values_list('country')
     elif type == "insProtocol":
-        list = instance.objects.values_list('ins_type')
+        list = InstancePort.objects.values_list('protocol')
     elif type == "venDevice":
         list = VulnerabilityDevice.objects.values_list('vendor')
 
