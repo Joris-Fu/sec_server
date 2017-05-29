@@ -205,8 +205,10 @@ def _get_devices(search_params, page_num):
     sql_from = 'FROM knowledgeBase_instance a ' \
                'left join knowledgeBase_instanceport b on a.name = b.instance_id '
 
+    # 过滤掉带星号的IP地址
+    sql_where = 'WHERE a.ip not like "%*%" '
+
     if search_params:
-        sql_where = 'WHERE '
 
         sql_params = []
         for search_key, search_value in search_params.items():
@@ -217,11 +219,10 @@ def _get_devices(search_params, page_num):
                 search_key = 'a.ip_address'  # ip --> ip_address
             sql_params.append(search_key + ' like "%%%s%%"' % search_value)
 
-        sql_where += ' AND '.join(sql_params)
-    else:
-        sql_where = ''
+        sql_where += ' AND ' + ' AND '.join(sql_params)
 
     sql_count = 'select count(*) ' + sql_from + sql_where
+    print(sql_count)
 
     cursor = connection.cursor()
     cursor.execute(sql_count)
@@ -235,6 +236,7 @@ def _get_devices(search_params, page_num):
     sql_limit = ' limit %s, %s' % (from_idx, page_size)
     sql = sql_select + sql_from + sql_where + sql_limit
 
+    print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
     rows = cursor.fetchall()
