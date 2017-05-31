@@ -53,7 +53,8 @@ def getInstance(request):
     cursor = connection.cursor()
     sql = 'SELECT a.ip, a.city, a.country, a.timestamp, a.lat, a.lon, b.port, b.protocol ' \
           'FROM knowledgeBase_instance a ' \
-          'left join knowledgeBase_instanceport b on a.name = b.instance_id'
+          'left join knowledgeBase_instanceport b on a.name = b.instance_id ' \
+          'WHERE a.ip not like "%*%"'
     cursor.execute(sql)
     rowset = cursor.fetchall()
 
