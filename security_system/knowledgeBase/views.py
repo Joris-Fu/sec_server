@@ -320,6 +320,7 @@ def split_search_words(words):
     """
     q = dict()
 
+    words = words.lower()
     arr = words.split(':')
     if len(arr) == 1:
         q['banner'] = arr[0]
