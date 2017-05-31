@@ -42,6 +42,7 @@ class instance(models.Model):
     update_time = models.DateTimeField(verbose_name='最后更新时间', null=True)
     from_scan = models.IntegerField(blank=True, null=True, verbose_name='来自扫描')  # 0 -> False, 1 -> True
     from_spider = models.IntegerField(blank=True, null=True, verbose_name='来自爬虫')  # 0 -> False, 1 -> True
+    from_web = models.CharField(max_length=100, blank=True, null=True, verbose_name='爬虫自哪个网址')
 
 
 class InstancePort(models.Model):
