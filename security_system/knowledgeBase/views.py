@@ -96,8 +96,8 @@ def getVulnerability(request):
     return HttpResponse(json.dumps(result))
 
 
-support_keys_for_host = ('ip', 'country', 'city', 'port', 'protocol')
-support_keys_for_web = ('ip', 'port', 'city', 'port')
+support_keys_for_host = ('ip', 'country', 'city', 'port', 'protocol', 'banner')
+support_keys_for_web = ('ip', 'port', 'city', 'port', 'banner')
 support_query_types = ('host', 'web', 'camera')
 page_size = 10
 
@@ -108,8 +108,8 @@ def search(request):
     :param request: 
     :return: 
     """
-    result = ''
     if request.method == 'GET':
+        print(request.GET)
         query_condition = request.GET.get('q')
         query_type = request.GET.get('t')
         page_num = request.GET.get('p')
@@ -129,15 +129,8 @@ def search(request):
             errmsg = {'error': 'Please enter a query condition!'}
             return json_response(errmsg)
 
-        search_params = {}
-
-        query_list = query_condition.split(' ')
-        for query in query_list:
-            one_query = query.split(':')
-            if len(one_query) != 2:
-                continue
-
-            search_params[one_query[0]] = one_query[1]
+        search_params = split_search_words(query_condition)
+        print("search params: %s" % search_params)
 
         if query_type == 'host':
             result, total_page, curr_page, total_num = _get_devices(search_params, pn)
@@ -210,16 +203,15 @@ def _get_devices(search_params, page_num):
 
     if search_params:
 
-        sql_params = []
         for search_key, search_value in search_params.items():
             if search_key not in support_keys_for_host:
+                print("Not support the search key: %s" % search_key)
                 continue
 
             if search_key == 'ip':
                 search_key = 'a.ip_address'  # ip --> ip_address
-            sql_params.append(search_key + ' like "%%%s%%"' % search_value)
 
-        sql_where += ' AND ' + ' AND '.join(sql_params)
+            sql_where += ' AND ' + search_key + ' like "%%%s%%"' % search_value
 
     sql_count = 'select count(*) ' + sql_from + sql_where
     print(sql_count)
@@ -315,3 +307,42 @@ def json_response(msg, ensure_ascii=False):
     """
     dumps_params = {'ensure_ascii': ensure_ascii}
     return JsonResponse(msg, json_dumps_params=dumps_params)
+
+
+def split_search_words(words):
+    """
+    切分输入的搜索内容，返回一个字典包括搜索key和value
+    :param words:
+    :return:
+    """
+    q = dict()
+
+    arr = words.split(':')
+    if len(arr) == 1:
+        q['banner'] = arr[0]
+        return q
+
+    segment = list()
+    for item in arr:
+        item = item.strip()
+        if not item:
+            continue
+
+        if item.find(',') > 0:
+            item_arr = item.split(',')
+            segment.append(item_arr[0].strip())
+            segment.append(item_arr[1].strip())
+        elif item.find(' ') > 0:
+            item_arr = item.split(' ')
+            segment.append(item_arr[0].strip())
+            segment.append(item_arr[1].strip())
+        else:
+            segment.append(item)
+
+    for i in range(0, len(segment), 2):
+        if (i + 2) > len(segment):
+            break
+
+        q[segment[i]] = segment[i + 1]
+
+    return q
