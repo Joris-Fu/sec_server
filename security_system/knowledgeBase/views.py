@@ -161,10 +161,9 @@ def _get_website(search_params, page_num):
     params = {}
     for search_key, search_value in search_params.items():
         if search_key not in support_keys_for_web:
+            print("Error: not suport search key: %s" % search_key)
             continue
 
-        if search_key == 'ip':
-            search_key = 'ip_address'  # ip --> ip_address
         params[search_key + '__icontains'] = search_value
 
     all_webs = []
@@ -173,13 +172,17 @@ def _get_website(search_params, page_num):
         p = Paginator(query, page_size)
         total_num = p.count
         total_page = p.num_pages
+        print('total num: %s' % total_num)
+        print('total page: %s' % total_page)
 
         if page_num > total_num:
             page_num = total_num
 
-        page_rows = p.page(page_num)
-        if page_rows:
-            all_webs = list(page_rows)
+        if total_num > 0:
+            page_rows = p.page(page_num)
+
+            if page_rows:
+                all_webs = list(page_rows)
     else:
         total_num = 0
         total_page = 0
@@ -209,7 +212,7 @@ def _get_devices(search_params, page_num):
                 continue
 
             if search_key == 'ip':
-                search_key = 'a.ip_address'  # ip --> ip_address
+                search_key = 'a.ip'  # ip --> ip_address
 
             sql_where += ' AND ' + search_key + ' like "%%%s%%"' % search_value
 
