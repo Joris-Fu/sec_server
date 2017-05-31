@@ -87,6 +87,13 @@ class IpLocation(models.Model):
     ip = models.CharField(primary_key=True, max_length=15)
     lat = models.CharField(max_length=15)
     lng = models.CharField(max_length=15)
+    timezone = models.CharField(max_length=10, null=True, blank=True)
+    location = models.CharField(max_length=50, null=True, blank=True)
+    organization = models.CharField(max_length=50, null=True, blank=True)
+    zip_code = models.CharField(max_length=50, null=True, blank=True)
+    as_num = models.CharField(max_length=50, null=True, blank=True, verbose_name="AS号")
+    as_name = models.CharField(max_length=50, null=True, blank=True, verbose_name="AS名称")
+    bgp_prefix = models.CharField(max_length=50, null=True, blank=True, verbose_name="BGP前缀")
 
 
 class Website(models.Model):
