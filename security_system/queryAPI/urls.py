@@ -96,4 +96,6 @@ urlpatterns = [
     url(r'^api/get/AllIndex/$', views.getAllIndex),
     ################################## update on 2017.05.23 by Xiaosong #####################################
     # url(r'^api/get/multichannel/(.*)/$', views.multichannel),
+
+    url(r'^api/syn/cve$', views.syn_cve),
 ]

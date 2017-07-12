@@ -6,7 +6,7 @@ import os
 # sys.setdefaultencoding("utf-8")
 import threading
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from queryAPI import threatcrowd, weiboheat
@@ -2844,3 +2844,56 @@ def getQuantityOfEachSource(request):
     cur.close()
     conn.close()
     return HttpResponse(json.dumps(result))
+
+
+def syn_cve(request):
+    """
+    用于同步cve数据给其他部署的系统
+    参数d：指定返回此日期之后的数据，格式为YYYY-MM-DD
+    :param request:
+    :param item:
+    :return:
+    """
+    if request.method == 'GET':
+        d = request.GET.get('d')
+
+        if not d:
+            return JsonResponse({'error': 'Invalid parameter'})
+        sql = "select id,num,score,secrecy,integrity," \
+              "usability,complexity,vectorofattack,identify,kind," \
+              "cpe,finddate,summary from cve where finddate > %s"
+        conn, cursor = createConnect()
+
+        where = "发布时间 :%s 00:00:00" % d
+
+        print("sql: %s" % sql)
+        print("where: %s" % where)
+        cursor.execute(sql, (where,))
+        results = cursor.fetchall()
+
+        print("results: %s" % len(results))
+
+        cve_list = list()
+        for row in results:
+            cves = dict()
+            cves["id"] = row[0]
+            cves["num"] = row[1]
+            cves["score"] = row[2]
+            cves["secrecy"] = row[3]
+            cves["integrity"] = row[4]
+            cves["usability"] = row[5]
+            cves["complexity"] = row[6]
+            cves["vectorofattack"] = row[7]
+            cves["identify"] = row[8]
+            cves["kind"] = row[9]
+            cves["cpe"] = row[10]
+            cves["finddate"] = row[11]
+            cves["summary"] = row[12]
+            cve_list.append(cves)
+
+        cursor.close()
+        conn.close()
+
+        syn_data = {"result": cve_list}
+        return JsonResponse(syn_data, json_dumps_params={'ensure_ascii': False})
+    return JsonResponse({'error': 'Not support method'})
