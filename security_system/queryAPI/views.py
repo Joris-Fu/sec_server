@@ -2854,46 +2854,50 @@ def syn_cve(request):
     :param item:
     :return:
     """
-    if request.method == 'GET':
-        d = request.GET.get('d')
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Not support method'})
 
-        if not d:
-            return JsonResponse({'error': 'Invalid parameter'})
-        sql = "select id,num,score,secrecy,integrity," \
-              "usability,complexity,vectorofattack,identify,kind," \
-              "cpe,finddate,summary from cve where finddate > %s"
+    d = request.GET.get('d')
+
+    if not d:
+        return JsonResponse({'error': 'Invalid parameter'})
+
+    try:
         conn, cursor = createConnect()
+        try:
 
-        where = "发布时间 :%s 00:00:00" % d
+            sql = "select id,num,score,secrecy,integrity," \
+                  "usability,complexity,vectorofattack,identify,kind," \
+                  "cpe,finddate,summary from cve where finddate > %s"
+            param = "发布时间 :%s 00:00:00" % d
 
-        print("sql: %s" % sql)
-        print("where: %s" % where)
-        cursor.execute(sql, (where,))
-        results = cursor.fetchall()
+            cursor.execute(sql, (param,))
+            results = cursor.fetchall()
 
-        print("results: %s" % len(results))
+            cve_list = list()
+            for row in results:
+                cve = dict()
+                cve["id"] = row[0]
+                cve["num"] = row[1]
+                cve["score"] = row[2]
+                cve["secrecy"] = row[3]
+                cve["integrity"] = row[4]
+                cve["usability"] = row[5]
+                cve["complexity"] = row[6]
+                cve["vectorofattack"] = row[7]
+                cve["identify"] = row[8]
+                cve["kind"] = row[9]
+                cve["cpe"] = row[10]
+                cve["finddate"] = row[11]
+                cve["summary"] = row[12]
+                cve_list.append(cve)
 
-        cve_list = list()
-        for row in results:
-            cves = dict()
-            cves["id"] = row[0]
-            cves["num"] = row[1]
-            cves["score"] = row[2]
-            cves["secrecy"] = row[3]
-            cves["integrity"] = row[4]
-            cves["usability"] = row[5]
-            cves["complexity"] = row[6]
-            cves["vectorofattack"] = row[7]
-            cves["identify"] = row[8]
-            cves["kind"] = row[9]
-            cves["cpe"] = row[10]
-            cves["finddate"] = row[11]
-            cves["summary"] = row[12]
-            cve_list.append(cves)
-
-        cursor.close()
-        conn.close()
+        finally:
+            cursor.close()
+            conn.close()
 
         syn_data = {"result": cve_list}
         return JsonResponse(syn_data, json_dumps_params={'ensure_ascii': False})
-    return JsonResponse({'error': 'Not support method'})
+
+    except Exception as e:
+        return JsonResponse({'error': 'System Error: %s' % e})
