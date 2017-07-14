@@ -98,4 +98,5 @@ urlpatterns = [
     # url(r'^api/get/multichannel/(.*)/$', views.multichannel),
 
     url(r'^api/syn/cve$', views.syn_cve),
+    url(r'^api/syn/conpotlog$', views.syn_conpot_log),
 ]

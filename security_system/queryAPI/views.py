@@ -2851,7 +2851,6 @@ def syn_cve(request):
     用于同步cve数据给其他部署的系统
     参数d：指定返回此日期之后的数据，格式为YYYY-MM-DD
     :param request:
-    :param item:
     :return:
     """
     if request.method != 'GET':
@@ -2868,7 +2867,8 @@ def syn_cve(request):
 
             sql = "select id,num,score,secrecy,integrity," \
                   "usability,complexity,vectorofattack,identify,kind," \
-                  "cpe,finddate,summary from cve where finddate > %s"
+                  "cpe,finddate,summary from cve where finddate >= %s"
+
             param = "发布时间 :%s 00:00:00" % d
 
             cursor.execute(sql, (param,))
@@ -2901,3 +2901,73 @@ def syn_cve(request):
 
     except Exception as e:
         return JsonResponse({'error': 'System Error: %s' % e})
+
+
+def syn_conpot_log(request):
+    """
+    用于同步conpot_log数据给其他部署的系统
+    参数d：指定返回此日期之后的数据，格式为YYYY-MM-DD
+    :param request:
+    :return:
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Not support method'})
+
+    d = request.GET.get('d')
+
+    if not d:
+        return JsonResponse({'error': 'Invalid parameter'})
+
+    try:
+        conn, cursor = createConnect()
+        try:
+
+            sql = "select date,time,function_id,protocol,request," \
+                  "destiIP,sourcePort,DestiPort,slaveID,sourceIP," \
+                  "response,country,subdivision,city,coordinate " \
+                  "from conpot_log where date >= %s"
+
+            print("sql=%s" % sql)
+            print("param=%s" % d)
+            cursor.execute(sql, (d,))
+            results = cursor.fetchall()
+
+            data_list = list()
+            for row in results:
+                item = dict()
+                item["date"] = _to_str(row[0])
+                item["time"] = _to_str(row[1])
+                item["function_id"] = row[2]
+                item["protocol"] = row[3]
+                item["request"] = row[4]
+                item["destiIP"] = row[5]
+                item["sourcePort"] = row[6]
+                item["DestiPort"] = row[7]
+                item["slaveID"] = row[8]
+                item["sourceIP"] = row[9]
+                item["response"] = row[10]
+                item["country"] = row[11]
+                item["subdivision"] = row[12]
+                item["city"] = row[13]
+                item["coordinate"] = row[14]
+                data_list.append(item)
+
+        finally:
+            cursor.close()
+            conn.close()
+
+        print("result size: %s" % len(data_list))
+        syn_data = {"result": data_list}
+        return JsonResponse(syn_data, json_dumps_params={'ensure_ascii': False})
+
+    except Exception as e:
+        return JsonResponse({'error': 'System Error: %s' % e})
+
+
+def _to_str(msg):
+    if msg is None:
+        return None
+
+    if msg:
+        return str(msg)
+    return ''
