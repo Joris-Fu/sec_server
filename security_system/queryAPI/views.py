@@ -2969,7 +2969,8 @@ def _to_str(msg):
         return None
 
     if msg:
-        return str(msg)
+#        return str(msg)
+        return msg
     return ''
 	
 	
@@ -2991,8 +2992,8 @@ def syn_geo_info(request):
     try:
         conn, cursor = createConnect()
         try:
-            #ip,country,subdivision,city,coordinate
-            sql = "select * from GeoInfo"
+
+            sql = "select ip,country,subdivision,city,coordinate from GeoInfo"
 
             print("sql=%s" % sql)
             print("param=%s" % d)
@@ -3039,9 +3040,8 @@ def syn_geo_info_target(request):
     try:
         conn, cursor = createConnect()
         try:
-            #ip,country,subdivision,city,coordinate
-            sql = "select *" \
-                      "from GeoInfoTarget"
+
+            sql = "select ip,country,subdivision,city,coordinate from GeoInfo"
 
             print("sql=%s" % sql)
             print("param=%s" % d)
@@ -3086,8 +3086,8 @@ def syn_geo_info_org(request):
     try:
         conn, cursor = createConnect()
         try:
-            #ip,isp,organization
-            sql = "select * " \
+
+            sql = "select ip,isp,organization " \
                       "from GeoInfoOrg"
 
             print("sql=%s" % sql)
@@ -3132,9 +3132,9 @@ def syn_geo_info_target_org(request):
     try:
         conn, cursor = createConnect()
         try:
-            #ip,isp,organization
-            sql = "select * " \
-                      "from GeoInfoTargetOrg"
+
+            sql = "select ip,isp,organization " \
+                      "from GeoInfoOrg"
 
             print("sql=%s" % sql)
             print("param=%s" % d)
