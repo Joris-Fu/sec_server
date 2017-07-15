@@ -2971,3 +2971,191 @@ def _to_str(msg):
     if msg:
         return str(msg)
     return ''
+	
+	
+def syn_geo_info(request):
+    """
+    用于同步conpot_log数据给其他部署的系统
+    参数d：指定返回此日期之后的数据，格式为YYYY-MM-DD
+    :param request:
+    :return:
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Not support method'})
+
+    d = request.GET.get('d')
+
+    if not d:
+        return JsonResponse({'error': 'Invalid parameter'})
+
+    try:
+        conn, cursor = createConnect()
+        try:
+            #ip,country,subdivision,city,coordinate
+            sql = "select * from GeoInfo"
+
+            print("sql=%s" % sql)
+            print("param=%s" % d)
+            count=cursor.execute(sql)
+            results = cursor.fetchall()
+			
+            data_list = list()
+            for row in results:
+                item = dict()
+                item["ip"] = _to_str(row[0])
+                item["country"] = _to_str(row[1])
+                item["subdivision"] = row[2]
+                item["city"] = row[3]
+                item["coordinate"] = row[4]
+                data_list.append(item)
+
+        finally:
+            cursor.close()
+            conn.close()
+
+        print("result size: %s" % len(data_list))
+        syn_data = {"result": data_list}
+        return JsonResponse(syn_data, json_dumps_params={'ensure_ascii': False})
+
+    except Exception as e:
+        return JsonResponse({'error': 'System Error: %s' % e})
+
+		
+def syn_geo_info_target(request):
+    """
+    用于同步conpot_log数据给其他部署的系统
+    参数d：指定返回此日期之后的数据，格式为YYYY-MM-DD
+    :param request:
+    :return:
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Not support method'})
+
+    d = request.GET.get('d')
+
+    if not d:
+        return JsonResponse({'error': 'Invalid parameter'})
+
+    try:
+        conn, cursor = createConnect()
+        try:
+            #ip,country,subdivision,city,coordinate
+            sql = "select *" \
+                      "from GeoInfoTarget"
+
+            print("sql=%s" % sql)
+            print("param=%s" % d)
+            cursor.execute(sql)
+            results = cursor.fetchall()
+
+            data_list = list()
+            for row in results:
+                item = dict()
+                item["ip"] = _to_str(row[0])
+                item["country"] = _to_str(row[1])
+                item["subdivision"] = row[2]
+                item["city"] = row[3]
+                item["coordinate"] = row[4]
+                data_list.append(item)
+
+        finally:
+            cursor.close()
+            conn.close()
+
+        print("result size: %s" % len(data_list))
+        syn_data = {"result": data_list}
+        return JsonResponse(syn_data, json_dumps_params={'ensure_ascii': False})
+
+    except Exception as e:
+        return JsonResponse({'error': 'System Error: %s' % e})
+def syn_geo_info_org(request):
+    """
+    用于同步conpot_log数据给其他部署的系统
+    参数d：指定返回此日期之后的数据，格式为YYYY-MM-DD
+    :param request:
+    :return:
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Not support method'})
+
+    d = request.GET.get('d')
+
+    if not d:
+        return JsonResponse({'error': 'Invalid parameter'})
+
+    try:
+        conn, cursor = createConnect()
+        try:
+            #ip,isp,organization
+            sql = "select * " \
+                      "from GeoInfoOrg"
+
+            print("sql=%s" % sql)
+            print("param=%s" % d)
+            cursor.execute(sql)
+            results = cursor.fetchall()
+
+            data_list = list()
+            for row in results:
+                item = dict()
+                item["ip"] = _to_str(row[0])
+                item["isp"] = _to_str(row[1])
+                item["organization"] = row[2]
+                data_list.append(item)
+
+        finally:
+            cursor.close()
+            conn.close()
+
+        print("result size: %s" % len(data_list))
+        syn_data = {"result": data_list}
+        return JsonResponse(syn_data, json_dumps_params={'ensure_ascii': False})
+
+    except Exception as e:
+        return JsonResponse({'error': 'System Error: %s' % e})
+		
+def syn_geo_info_target_org(request):
+    """
+    用于同步conpot_log数据给其他部署的系统
+    参数d：指定返回此日期之后的数据，格式为YYYY-MM-DD
+    :param request:
+    :return:
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Not support method'})
+
+    d = request.GET.get('d')
+
+    if not d:
+        return JsonResponse({'error': 'Invalid parameter'})
+
+    try:
+        conn, cursor = createConnect()
+        try:
+            #ip,isp,organization
+            sql = "select * " \
+                      "from GeoInfoTargetOrg"
+
+            print("sql=%s" % sql)
+            print("param=%s" % d)
+            cursor.execute(sql)
+            results = cursor.fetchall()
+
+            data_list = list()
+            for row in results:
+                item = dict()
+                item["ip"] = _to_str(row[0])
+                item["isp"] = _to_str(row[1])
+                item["organization"] = row[2]
+                data_list.append(item)
+
+        finally:
+            cursor.close()
+            conn.close()
+
+        print("result size: %s" % len(data_list))
+        syn_data = {"result": data_list}
+        return JsonResponse(syn_data, json_dumps_params={'ensure_ascii': False})
+
+    except Exception as e:
+        return JsonResponse({'error': 'System Error: %s' % e})

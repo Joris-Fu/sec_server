@@ -97,6 +97,10 @@ urlpatterns = [
     ################################## update on 2017.05.23 by Xiaosong #####################################
     # url(r'^api/get/multichannel/(.*)/$', views.multichannel),
 
-    url(r'^api/syn/cve$', views.syn_cve),
-    url(r'^api/syn/conpotlog$', views.syn_conpot_log),
+    url(r'^api/syn/cve/$', views.syn_cve),
+    url(r'^api/syn/conpotlog/$', views.syn_conpot_log),
+    url(r'^api/syn/geoinfo/$', views.syn_geo_info),
+    url(r'^api/syn/geoinfotarget/$', views.syn_geo_info_target),
+    url(r'^api/syn/geoinfoorg/$', views.syn_geo_info_org),
+    url(r'^api/syn/geoinfotargetorg/$', views.syn_geo_info_target_org),
 ]
