@@ -2969,8 +2969,7 @@ def _to_str(msg):
         return None
 
     if msg:
-#        return str(msg)
-        return msg
+        return str(msg)
     return ''
 	
 	
@@ -2981,13 +2980,6 @@ def syn_geo_info(request):
     :param request:
     :return:
     """
-    if request.method != 'GET':
-        return JsonResponse({'error': 'Not support method'})
-
-    d = request.GET.get('d')
-
-    if not d:
-        return JsonResponse({'error': 'Invalid parameter'})
 
     try:
         conn, cursor = createConnect()
@@ -2996,15 +2988,14 @@ def syn_geo_info(request):
             sql = "select ip,country,subdivision,city,coordinate from GeoInfo"
 
             print("sql=%s" % sql)
-            print("param=%s" % d)
             count=cursor.execute(sql)
             results = cursor.fetchall()
 			
             data_list = list()
             for row in results:
                 item = dict()
-                item["ip"] = _to_str(row[0])
-                item["country"] = _to_str(row[1])
+                item["ip"] = row[0]
+                item["country"] = row[1]
                 item["subdivision"] = row[2]
                 item["city"] = row[3]
                 item["coordinate"] = row[4]
@@ -3029,13 +3020,6 @@ def syn_geo_info_target(request):
     :param request:
     :return:
     """
-    if request.method != 'GET':
-        return JsonResponse({'error': 'Not support method'})
-
-    d = request.GET.get('d')
-
-    if not d:
-        return JsonResponse({'error': 'Invalid parameter'})
 
     try:
         conn, cursor = createConnect()
@@ -3044,15 +3028,14 @@ def syn_geo_info_target(request):
             sql = "select ip,country,subdivision,city,coordinate from GeoInfo"
 
             print("sql=%s" % sql)
-            print("param=%s" % d)
             cursor.execute(sql)
             results = cursor.fetchall()
 
             data_list = list()
             for row in results:
                 item = dict()
-                item["ip"] = _to_str(row[0])
-                item["country"] = _to_str(row[1])
+                item["ip"] = row[0]
+                item["country"] = row[1]
                 item["subdivision"] = row[2]
                 item["city"] = row[3]
                 item["coordinate"] = row[4]
@@ -3075,14 +3058,6 @@ def syn_geo_info_org(request):
     :param request:
     :return:
     """
-    if request.method != 'GET':
-        return JsonResponse({'error': 'Not support method'})
-
-    d = request.GET.get('d')
-
-    if not d:
-        return JsonResponse({'error': 'Invalid parameter'})
-
     try:
         conn, cursor = createConnect()
         try:
@@ -3091,15 +3066,14 @@ def syn_geo_info_org(request):
                       "from GeoInfoOrg"
 
             print("sql=%s" % sql)
-            print("param=%s" % d)
             cursor.execute(sql)
             results = cursor.fetchall()
 
             data_list = list()
             for row in results:
                 item = dict()
-                item["ip"] = _to_str(row[0])
-                item["isp"] = _to_str(row[1])
+                item["ip"] = row[0]
+                item["isp"] = row[1]
                 item["organization"] = row[2]
                 data_list.append(item)
 
@@ -3121,13 +3095,6 @@ def syn_geo_info_target_org(request):
     :param request:
     :return:
     """
-    if request.method != 'GET':
-        return JsonResponse({'error': 'Not support method'})
-
-    d = request.GET.get('d')
-
-    if not d:
-        return JsonResponse({'error': 'Invalid parameter'})
 
     try:
         conn, cursor = createConnect()
@@ -3137,15 +3104,14 @@ def syn_geo_info_target_org(request):
                       "from GeoInfoOrg"
 
             print("sql=%s" % sql)
-            print("param=%s" % d)
             cursor.execute(sql)
             results = cursor.fetchall()
 
             data_list = list()
             for row in results:
                 item = dict()
-                item["ip"] = _to_str(row[0])
-                item["isp"] = _to_str(row[1])
+                item["ip"] = row[0]
+                item["isp"] = row[1]
                 item["organization"] = row[2]
                 data_list.append(item)
 
